@@ -1,0 +1,44 @@
+// 公共/新闻
+{
+	"bsonType": "object",
+	"required": ["title", "content"],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "公告ID"
+		},
+		"title": {
+			"bsonType": "string",
+			"description": "公告标题"
+		},
+		"content": {
+			"bsonType": "string",
+			"description": "公告内容（HTML富文本）"
+		},
+		"author": {
+			"bsonType": "string",
+			"description": "作者"
+		},
+		"select": {
+			"bsonType": "bool",
+			"description": "是否置顶"
+		},
+		"view_count": {
+			"bsonType": "int",
+			"description": "浏览次数"
+		},
+		"publish_date": {
+			"bsonType": "timestamp",
+			"description": "发布时间"
+		},
+		"create_time": {
+			"bsonType": "timestamp",
+			"description": "创建时间"
+		}
+	}
+}
