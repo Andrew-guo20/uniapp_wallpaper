@@ -2,11 +2,10 @@
 	<view class="preview" v-if="currentInfo">
 		<swiper circular :current="currentIndex" @change="changeSwiper">
 			<swiper-item v-for="(item,index) in classList" :key="item._id">
-				<!-- 方案一 -->
-				<!-- <image v-if="currentIndex == index"  @click="maskChange" :src="item.picurl" mode="aspectFill"></image> -->
-				<!-- 方案二 -->
-				<image v-if="readImgs.includes(index)"  @click="maskChange" :src="item.picurl" mode="aspectFill"></image>
-				<!-- 方案三  在push到readImgs 将当前索引的前一个索引和后一个索引也push到readImgs中 还有判断前一个索引是否小于零 后一个索引是否大于等于classList.length-1 -->
+				<view v-if="readImgs.includes(index)" class="imgWrapper" @click="maskChange">
+					<image :src="item.smallPicurl" mode="aspectFill" class="thumb"></image>
+					<image :src="item.picurl" mode="aspectFill" class="full" @load="onImgLoad(index)"></image>
+				</view>
 			</swiper-item>
 		</swiper>
 
@@ -179,7 +178,11 @@
 				title: '评分成功',
 				icon: 'none'
 			})
-			classList.value[currentIndex.value].userScore = userScore.value
+				currentInfo.value.score = res.data.score
+				currentInfo.value.scoreCount = res.data.scoreCount
+				classList.value[currentIndex.value].userScore = userScore.value
+				classList.value[currentIndex.value].score = res.data.score
+				classList.value[currentIndex.value].scoreCount = res.data.scoreCount
 			uni.setStorageSync('storageClassList',classList.value)
 
 			// 关闭弹窗
@@ -282,8 +285,16 @@
 	const currentId = ref(null)
 	const currentIndex = ref(0)
 	const readImgs = ref([])
+	// 高清图加载状态（true=已加载完成）
+	const imgLoaded = ref({})
 	// 当前预览壁纸的信息
 	const currentInfo = ref(null)
+	// 解决首页加载额外图片的问题
+	// 高清图加载完成回调
+	const onImgLoad = (index) => {
+		imgLoaded.value[index] = true
+	}
+
 	// 解决首页加载额外图片的问题
 	const readImgsFun = ()=>{
 		readImgs.value.push(
@@ -304,7 +315,7 @@
 			classList.value = res.data.map(item =>{
 				return {
 					...item,
-					picurl:item.smallPicurl.replace('_small.webp','.jpg')
+					picurl: item.picurl || item.smallPicurl.replace('_small.webp','.jpg')
 				}
 			})
 		}
@@ -324,7 +335,7 @@
 			// 先将返回的对象其他不变的属性 保留
 			...item,
 			// 将缩略图路径替换成大图
-			picurl:item.smallPicurl.replace('_small.webp','.jpg')
+			picurl: item.picurl || item.smallPicurl.replace('_small.webp','.jpg')
 		}
 	})
 
@@ -357,6 +368,27 @@ onShareTimeline(()=>{
 	position: relative;
 	width: 100%;
 	height: 100vh;
+		.imgWrapper {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			.thumb {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: 1;
+			}
+			.full {
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				z-index: 2;
+			}
+		}
 	swiper {
 		height: 100%;
 		width: 100%;

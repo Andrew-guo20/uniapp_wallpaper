@@ -5,13 +5,13 @@
 			<view class="avater">
 				<image src="/static/images/xxmLogo.png" mode="aspectFill"></image>
 			</view>
-			<view class="ip">{{userInfo.IP}}</view>
-			<view class="address">来自于：{{userInfo.address.city || userInfo.address.province || userInfo.address.country}}</view>
+			<view class="ip">{{userInfo.IP || '壁纸用户'}}</view>
+			<view class="address">来自于：{{userInfo.address?.city || userInfo.address?.province || userInfo.address?.country || '未知'}}</view>
 		</view>
 
 		<view class="section">
 			<view class="list">
-				<navigator url="/pages/classlist/classlist?name=我的下载&type=download" open-type="reLaunch" class="row">
+				<navigator url="/pages/classlist/classlist?name=我的下载&type=download" open-type="reLaunch"><view class="row">
 					<view class="left">
 						<uni-icons type="download-filled" size="20"></uni-icons>
 						<view class="text">我的下载</view>
@@ -20,8 +20,9 @@
 						<view class="text">{{userInfo.downloadSize}}</view>
 						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
 					</view>
+				</view>
 				</navigator>
-				<navigator url="/pages/classlist/classlist?name=我的评分&type=score" open-type="reLaunch" class="row">
+				<navigator url="/pages/classlist/classlist?name=我的评分&type=score" open-type="reLaunch"><view class="row">
 					<view class="left">
 						<uni-icons type="star-filled" size="20"></uni-icons>
 						<view class="text">我的评分</view>
@@ -30,6 +31,7 @@
 						<view class="text">{{userInfo.scoreSize}}</view>
 						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
 					</view>
+				</view>
 				</navigator>
 				<view class="row">
 					<view class="left">
@@ -54,7 +56,7 @@
 
 		<view class="section">
 			<view class="list">
-				<navigator url="/pages/notice/detail?id=653507c6466d417a3718e94b&name=订阅更新" class="row">
+				<navigator url="/pages/notice/detail?id=6a12e64a8183ca0a9f551403&name=订阅更新"><view class="row">
 					<view class="left">
 						<uni-icons type="notification-filled" size="20"></uni-icons>
 						<view class="text">订阅更新</view>
@@ -62,8 +64,9 @@
 					<view class="right">
 						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
 					</view>
+				</view>
 				</navigator>
-				<navigator url="/pages/notice/detail?id=6536358ce0ec19c8d67fbe82" class="row">
+				<navigator url="/pages/notice/detail?id=6a12e64b8183ca0a9f551415"><view class="row">
 					<view class="left">
 						<uni-icons type="flag-filled" size="20"></uni-icons>
 						<view class="text">常见问题</view>
@@ -71,6 +74,7 @@
 					<view class="right">
 						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
 					</view>
+				</view>
 				</navigator>
 			</view>
 		</view>
@@ -146,20 +150,30 @@ getUserInfo()
 				padding: 0 30rpx;
 				height: 100rpx;
 				border-bottom: 1rpx solid #eee;
+				width: 100%;
+				box-sizing: border-box;
 				.left{
 					display: flex;
 					align-items: center;
+					flex: 1;
+					overflow: hidden;
 					:deep(.uni-icons){
 						color: $brand-theme-color;
-					}	
+						flex-shrink: 0;
+					}
 					.text{
 						padding-left: 10rpx;
 						color: #666;
+						overflow: hidden;
+						text-overflow: ellipsis;
+						white-space: nowrap;
 					}
 				}
 				.right{
 					display: flex;
 					align-items: center;
+					flex-shrink: 0;
+					margin-left: 10rpx;
 					.text{
 						font-size: 28rpx;
 						color: #aaa;

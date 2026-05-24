@@ -1,8 +1,0 @@
-开发uniCloud项目（名称wallpaper）
-一、项目搭建
-1.创建uniCloud项目
-	HBuilderX中新建项目，选择uni-app项目，并勾选启用uniCloud，在右侧选择服务供应商（支付宝云、阿里云、腾讯云）
-2.关联服务空间
-3.创建云函数/云对象
-	uniCloud/cloudfunctions目录右键创建云函数/云对象
-4.给云对象编写方法

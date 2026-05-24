@@ -1,95 +1,61 @@
-import { request } from '@/utils/request.js'
-// 首页海报列表
+const wallpaperObj = uniCloud.importObject('wallpaper')
+
+// 首页轮播图
 export function apiGetBanner() {
-  return request({
-    url: 'homeBanner'
-  })
+  return wallpaperObj.getBanner()
 }
 
 // 随机9张壁纸
 export function apiGetDayRandom() {
-  return request({
-    url: 'randomWall'
-  })
+  return wallpaperObj.getRandomWall()
 }
 
-
-// 壁纸大分类
+// 壁纸分类
 export function apiGetClassify(data = {}) {
-  return request({
-    url: 'classify',
-    data
-  })
+  return wallpaperObj.getClassify(data)
 }
 
-// 分类中壁纸列表（分类详情）
+// 分类下壁纸列表
 export function apiGetClassifyDetail(data = {}) {
-  return request({
-    url: 'wallList',
-    data
-  })
+  return wallpaperObj.getWallList(data)
 }
 
-// 为壁纸评分
-export function apiGetsetupScore(data = {}) {
-  return request({
-    url: 'setupScore',
-    data
-  })
-}
-
-// 壁纸下载
-export function apiWriteDownload(data = {}) {
-  return request({
-    url: 'downloadWall',
-    data
-  })
-}
-
-// 单个壁纸详情
+// 壁纸详情
 export function apiDetailWall(data = {}) {
-  return request({
-    url: 'detailWall',
-    data
-  })
+  return wallpaperObj.getDetailWall(data)
 }
 
-// 用户个人信息
+// 壁纸评分
+export function apiGetsetupScore(data = {}) {
+  return wallpaperObj.setupScore(data)
+}
+
+// 记录下载
+export function apiWriteDownload(data = {}) {
+  return wallpaperObj.downloadWall(data)
+}
+
+// 用户信息
 export function apiUserInfo(data = {}) {
-  return request({
-    url: 'userInfo',
-    data
-  })
+  return wallpaperObj.getUserInfo(data)
 }
 
-// 我的评分/下载列表
+// 用户下载/评分历史
 export function apiGetHistoryList(data = {}) {
-  return request({
-    url: 'userWallList',
-    data
-  })
+  return wallpaperObj.getUserWallList(data)
 }
 
-// 壁纸资讯公告列表
+// 公告列表
 export function apiGetNotice(data = {}) {
-  return request({
-    url: 'wallNewsList',
-    data
-  })
+  return wallpaperObj.getNewsList(data)
 }
 
-// 壁纸资讯公告详情
+// 公告详情
 export function apiNoticeDetail(data = {}) {
-  return request({
-    url: 'wallNewsDetail',
-    data
-  })
+  return wallpaperObj.getNewsDetail(data)
 }
 
 // 搜索壁纸
 export function apiSearchData(data = {}) {
-  return request({
-    url: 'searchWall',
-    data
-  })
+  return wallpaperObj.searchWall(data)
 }
