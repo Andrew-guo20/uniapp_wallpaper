@@ -158,7 +158,7 @@ getUserInfo()
 					flex: 1;
 					overflow: hidden;
 					:deep(.uni-icons){
-						color: $brand-theme-color;
+						color: $brand-theme-color !important;
 						flex-shrink: 0;
 					}
 					.text{

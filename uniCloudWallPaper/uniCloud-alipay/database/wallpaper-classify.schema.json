@@ -27,6 +27,10 @@
 		"sort": {
 			"bsonType": "int",
 			"description": "排序（升序）"
+		},
+		"select": {
+			"bsonType": "bool",
+			"description": "是否在首页专题精选展示"
 		}
 	}
 }

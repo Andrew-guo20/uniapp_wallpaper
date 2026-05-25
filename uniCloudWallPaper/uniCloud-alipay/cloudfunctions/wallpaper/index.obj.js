@@ -82,7 +82,13 @@ module.exports = {
 	 */
 	async getClassify(data = {}) {
 			data = mergeData.call(this, data)
+		const where = {}
+		if (data.select === true) {
+			where.select = true
+		}
+
 		let query = db.collection('wallpaper-classify')
+			.where(where)
 			.orderBy('sort', 'asc')
 
 		if (data.pageSize) {
@@ -467,6 +473,7 @@ module.exports = {
 			name: data.name,
 			picurl: data.picurl,
 			sort: data.sort || 0,
+			select: data.select || false,
 			updateTime: Date.now()
 		})
 		return { errCode: 0, data: { id: result.id } }

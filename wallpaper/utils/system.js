@@ -2,6 +2,7 @@ const SYSTEM_INFO = uni.getSystemInfoSync()
 export const getStatusBarHeight = () => SYSTEM_INFO.statusBarHeight || 15
 
 export const getTitleBarHeight = () => {
+	// 微信小程序等平台右上角有【胶囊】按钮，需要计算胶囊按钮的高度
 	if (uni.getMenuButtonBoundingClientRect) {
 		let { top, height } = uni.getMenuButtonBoundingClientRect()
 		return (top - getStatusBarHeight()) * 2 + height

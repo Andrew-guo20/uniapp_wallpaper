@@ -97,6 +97,7 @@ const bannerList = ref([])
 const getBanner = async () => {
 	let res = await apiGetBanner()
 	bannerList.value = res.data
+	console.log('轮播图',bannerList.value)
 }
 
 // 每日推荐
@@ -104,6 +105,7 @@ const dayRandomList = ref([])
 const getDayRandom = async () => {
 	let res = await apiGetDayRandom()
 	dayRandomList.value = res.data
+	console.log('每日推荐',dayRandomList.value)
 }
 
 // 公告
@@ -111,6 +113,7 @@ const noticeList = ref([])
 const getNotice = async () => {
 	let res = await apiGetNotice({select:true})
 	noticeList.value = res.data
+	console.log('公告',noticeList.value)
 }
 
 // 分类
@@ -122,7 +125,7 @@ const getClassify = async () => {
 		}
 	)
 	classifyList.value = res.data
-	console.log(res)
+	console.log('分类',classifyList.value)
 }
 
 // 跳转预览
@@ -196,7 +199,7 @@ getClassify()
 			justify-content: center;
 			align-items: center;
 			:deep(.uni-icons){
-				color: $brand-theme-color;
+				color: $brand-theme-color !important;
 			}
 			.text{
 				color: $brand-theme-color;
@@ -233,7 +236,7 @@ getClassify()
 			justify-content: center;
 			align-items: center;
 			:deep(.uni-icons){
-				color: $brand-theme-color;
+				color: $brand-theme-color !important;
 			}
 			.text{
 				margin-left: 5rpx;
@@ -265,7 +268,7 @@ getClassify()
 	.theme{
 		padding-top: 50rpx;
 		.more{
-			color: #888;
+			color: $brand-theme-color;
 			font-size: 32rpx;
 		}
 		.content{

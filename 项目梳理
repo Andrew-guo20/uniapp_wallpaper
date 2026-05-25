@@ -1,0 +1,5 @@
+# wallpaper
+- 首页
+--  自定义导航栏 custom-nav-bar（由于 .navbar 是固定定位 fixed 会把导航栏 从正常文档流里抽出来，叠在页面最上层，不再占据下面内容的布局高度；所以需要.fill 撑开垂直空间）
+--- 自定义导航栏的布局尺寸工具 system.js
+--  自定义通用标题栏 common-title 

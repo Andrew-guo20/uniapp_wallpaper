@@ -14,6 +14,7 @@
 			</view>
 		</view>
 
+		<!-- 填充导航栏高度 -->
 		<view class="fill" :style="{height:getNavbarHeight()+'px'}"></view>
 	</view>
 </template>
