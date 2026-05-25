@@ -36,7 +36,7 @@ const props = defineProps({
 		})
 	}
 })
-console.log('props.item.name',props.item.name)
+
 </script>
 
 <style lang="scss" scoped>

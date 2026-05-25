@@ -70,7 +70,7 @@ const queryParams = ref({
 const historySearch = ref(uni.getStorageSync('historySearch') || []);
 
 //热门搜索词
-const recommendList = ref(["美女","帅哥","宠物","卡通"]);
+const recommendList = ref(["风景","动漫","游戏","美女"]);
 
 //没有更多
 const noData = ref(false);

@@ -46,6 +46,7 @@ module.exports = {
 	 */
 	async getBanner() {
 		const result = await db.collection('wallpaper-banner')
+			.field('_id, picurl, target, url, appid, sort')
 			.orderBy('sort', 'asc')
 			.get()
 		return { errCode: 0, data: result.data }
@@ -68,6 +69,7 @@ module.exports = {
 		const skip = maxSkip > 0 ? Math.floor(Math.random() * maxSkip) : 0
 
 		const result = await db.collection('wallpaper-list')
+			.field('_id, smallPicurl, picurl, classid, score, downloadCount, scoreCount, description, tabs, nickname, create_time')
 			.where({ status: 1 })
 			.skip(skip)
 			.limit(take)
@@ -88,6 +90,7 @@ module.exports = {
 		}
 
 		let query = db.collection('wallpaper-classify')
+			.field('_id, name, picurl, sort, updateTime')
 			.where(where)
 			.orderBy('sort', 'asc')
 
@@ -110,6 +113,7 @@ module.exports = {
 		const skip = (pageNum - 1) * pageSize
 
 		const result = await db.collection('wallpaper-list')
+			.field('_id, smallPicurl, picurl, classid, score, downloadCount, scoreCount, description, tabs, nickname, create_time')
 			.where({
 				classid: data.classid,
 				status: 1
@@ -302,6 +306,7 @@ module.exports = {
 		}
 
 		const result = await db.collection('wallpaper-news')
+			.field('_id, title, select, author, publish_date, view_count, create_time')
 			.where(where)
 			.orderBy('publish_date', 'desc')
 			.skip(skip)
@@ -352,8 +357,14 @@ module.exports = {
 				return { errCode: 0, data: [] }
 			}
 
+			// 拉取分类名映射（用于按分类名搜索）
+			const classifyResult = await db.collection('wallpaper-classify').get()
+			const classifyMap = {}
+			classifyResult.data.forEach(c => { classifyMap[c._id] = c.name })
+
 			// 拉取全部已发布壁纸，在 JS 中模糊匹配
 			const allResult = await db.collection('wallpaper-list')
+				.field('_id, smallPicurl, picurl, classid, description, tabs, nickname, create_time')
 				.where({ status: 1 })
 				.orderBy('create_time', 'desc')
 				.limit(200)
@@ -364,9 +375,11 @@ module.exports = {
 				const desc = (item.description || '').toLowerCase()
 				const nick = (item.nickname || '').toLowerCase()
 				const tabs = (item.tabs || []).join(' ').toLowerCase()
+				const cname = (classifyMap[item.classid] || '').toLowerCase()
 				return desc.includes(lowerKeyword) ||
 				       nick.includes(lowerKeyword) ||
-				       tabs.includes(lowerKeyword)
+				       tabs.includes(lowerKeyword) ||
+				       cname.includes(lowerKeyword)
 			})
 
 			const skip = (pageNum - 1) * pageSize
