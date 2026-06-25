@@ -128,6 +128,7 @@
 	import uniRate from '@/uni_modules/uni-rate/components/uni-rate/uni-rate.vue'
 	import { apiGetsetupScore,apiWriteDownload,apiDetailWall } from '@/API/apis.js'
 	import { goToHome } from '@/utils/common.js'
+	import { isLoggedIn } from '@/utils/auth.js'
 
 	// 遮罩层显示状态
 	const mask = ref(true)
@@ -163,6 +164,14 @@
 
 	// 确认评分
 	const submitScore = async () => {
+		if (!isLoggedIn()) {
+			uni.showToast({ title: '请先登录', icon: 'none' })
+			scorePopup.value.close()
+			userScore.value = 0
+			isScore.value = false
+			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			return
+		}
 		uni.showLoading({
 			title: '加载中'
 		})
@@ -193,6 +202,14 @@
 
 	// 点击下载
 	const clickDownload = async () => {
+		// #ifndef H5
+		if (!isLoggedIn()) {
+			uni.showToast({ title: '请先登录', icon: 'none' })
+			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			return
+		}
+		// #endif
+
 		// #ifdef H5
 		uni.showModal({
 			content:'请长按保存壁纸',

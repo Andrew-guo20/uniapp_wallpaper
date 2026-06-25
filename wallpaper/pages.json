@@ -7,6 +7,12 @@
 			}
 		},
 		{
+			"path": "pages/login/login",
+			"style": {
+				"navigationBarTitleText": "登录"
+			}
+		},
+		{
 			"path": "pages/classify/classify",
 			"style": {
 				"navigationBarTitleText": "分类"

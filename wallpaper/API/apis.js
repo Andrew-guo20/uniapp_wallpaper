@@ -59,3 +59,22 @@ export function apiNoticeDetail(data = {}) {
 export function apiSearchData(data = {}) {
   return wallpaperObj.searchWall(data)
 }
+
+// ============================================================
+//  v2.0 新增：用户体系
+// ============================================================
+
+// 微信登录
+export function apiLogin(code) {
+  return wallpaperObj.userLogin({ code })
+}
+
+// 获取当前用户微信信息（昵称、头像）
+export function apiGetUserProfile() {
+  return wallpaperObj.getUserProfile()
+}
+
+// 校验登录状态
+export function apiCheckToken(token) {
+  return wallpaperObj.checkToken({ token })
+}

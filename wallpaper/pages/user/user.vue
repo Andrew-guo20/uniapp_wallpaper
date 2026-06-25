@@ -1,81 +1,120 @@
 <template>
 	<view class="userLayout pageBg" v-if="userInfo">
 		<view :style="{height:getNavbarHeight()+'px'}"></view>
+
+		<!-- 用户头像区 -->
 		<view class="userInfo">
-			<view class="avater">
-				<image src="/static/images/xxmLogo.png" mode="aspectFill"></image>
+			<view class="avatar" @click="handleAvatarClick">
+				<image
+					v-if="isLogin && loginUser.avatar"
+					:src="loginUser.avatar"
+					mode="aspectFill"
+				></image>
+				<image v-else src="/static/images/xxmLogo.png" mode="aspectFill"></image>
 			</view>
-			<view class="ip">{{userInfo.IP || '壁纸用户'}}</view>
-			<view class="address">来自于：{{userInfo.address?.city || userInfo.address?.province || userInfo.address?.country || '未知'}}</view>
+
+			<view class="name" v-if="isLogin">{{loginUser.nickname || '壁纸用户'}}</view>
+			<view class="name login-hint" v-else @click="goLogin">点击登录</view>
+
+			<view class="sub" v-if="isLogin">已登录 · 数据已同步</view>
+			<view class="sub" v-else>登录后可同步收藏与历史记录</view>
 		</view>
 
+		<!-- 数据概览 -->
 		<view class="section">
 			<view class="list">
-				<navigator url="/pages/classlist/classlist?name=我的下载&type=download" open-type="reLaunch"><view class="row">
-					<view class="left">
-						<uni-icons type="download-filled" size="20"></uni-icons>
-						<view class="text">我的下载</view>
+				<navigator url="/pages/classlist/classlist?name=我的下载&type=download" open-type="reLaunch">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="download-filled" size="20"></uni-icons>
+							<view class="text">我的下载</view>
+						</view>
+						<view class="right">
+							<view class="text">{{userInfo.downloadSize}}</view>
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
 					</view>
-					<view class="right">
-						<view class="text">{{userInfo.downloadSize}}</view>
-						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
-					</view>
-				</view>
 				</navigator>
-				<navigator url="/pages/classlist/classlist?name=我的评分&type=score" open-type="reLaunch"><view class="row">
-					<view class="left">
-						<uni-icons type="star-filled" size="20"></uni-icons>
-						<view class="text">我的评分</view>
+
+				<!-- 我的收藏 — v2.0 新增 -->
+				<navigator url="/pages/classlist/classlist?name=我的收藏&type=favorite" open-type="reLaunch">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="heart-filled" size="20"></uni-icons>
+							<view class="text">我的收藏</view>
+						</view>
+						<view class="right">
+							<view class="text">{{userInfo.favoriteSize || 0}}</view>
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
 					</view>
-					<view class="right">
-						<view class="text">{{userInfo.scoreSize}}</view>
-						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
-					</view>
-				</view>
 				</navigator>
-				<view class="row">
+
+				<navigator url="/pages/classlist/classlist?name=我的评分&type=score" open-type="reLaunch">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="star-filled" size="20"></uni-icons>
+							<view class="text">我的评分</view>
+						</view>
+						<view class="right">
+							<view class="text">{{userInfo.scoreSize}}</view>
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
+					</view>
+				</navigator>
+			</view>
+		</view>
+
+		<!-- 功能入口 -->
+		<view class="section">
+			<view class="list">
+				<view class="row" @click="handleContact">
 					<view class="left">
-						<button></button>
 						<uni-icons type="chatboxes-filled" size="20"></uni-icons>
 						<view class="text">联系客服</view>
 					</view>
-					<!-- #ifdef MP -->
-					 <button open-type="contact">联系客服</button>
-					<!-- #endif -->
-
-					<!-- #ifdef H5 || APP-PLUS -->
-					<button @click="clickContact">拨打电话</button>
-					<!-- #endif -->
 					<view class="right">
-						<view class="text">33</view>
 						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
 					</view>
+					<!-- #ifdef MP -->
+					<button open-type="contact"></button>
+					<!-- #endif -->
 				</view>
+
+				<navigator url="/pages/notice/detail?id=6a12e64a8183ca0a9f551403&name=订阅更新">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="notification-filled" size="20"></uni-icons>
+							<view class="text">订阅更新</view>
+						</view>
+						<view class="right">
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
+					</view>
+				</navigator>
+
+				<navigator url="/pages/notice/detail?id=6a12e64b8183ca0a9f551415">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="flag-filled" size="20"></uni-icons>
+							<view class="text">常见问题</view>
+						</view>
+						<view class="right">
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
+					</view>
+				</navigator>
 			</view>
 		</view>
 
-		<view class="section">
+		<!-- 退出登录 — 仅登录时显示 -->
+		<view class="section" v-if="isLogin">
 			<view class="list">
-				<navigator url="/pages/notice/detail?id=6a12e64a8183ca0a9f551403&name=订阅更新"><view class="row">
+				<view class="row logout-row" @click="handleLogout">
 					<view class="left">
-						<uni-icons type="notification-filled" size="20"></uni-icons>
-						<view class="text">订阅更新</view>
-					</view>
-					<view class="right">
-						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						<view class="text logout-text">退出登录</view>
 					</view>
 				</view>
-				</navigator>
-				<navigator url="/pages/notice/detail?id=6a12e64b8183ca0a9f551415"><view class="row">
-					<view class="left">
-						<uni-icons type="flag-filled" size="20"></uni-icons>
-						<view class="text">常见问题</view>
-					</view>
-					<view class="right">
-						<uni-icons type="right" size="15" color="#aaa"></uni-icons>
-					</view>
-				</view>
-				</navigator>
 			</view>
 		</view>
 	</view>
@@ -87,23 +126,59 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { getNavbarHeight } from '@/utils/system.js'
 import { apiUserInfo } from '@/API/apis.js'
-const clickContact = () => {
-	uni.makePhoneCall({
-		phoneNumber: '15571648972'
-	})
-}
+import { isLoggedIn, getUserInfo, logout } from '@/utils/auth.js'
+
+const isLogin = ref(isLoggedIn())
+const loginUser = ref(getUserInfo())
 
 const userInfo = ref(null)
-const getUserInfo = async () => {
-	apiUserInfo().then(res => {
-		console.log(res)
-    userInfo.value = res.data
+
+const getUserData = async () => {
+	const res = await apiUserInfo()
+	userInfo.value = res.data
+}
+
+getUserData()
+
+// 点击头像
+const handleAvatarClick = () => {
+	if (!isLogin.value) {
+		goLogin()
+	}
+}
+
+// 跳转登录
+const goLogin = () => {
+	uni.navigateTo({ url: '/pages/login/login' })
+}
+
+// 联系客服
+const handleContact = () => {
+	// #ifdef H5 || APP-PLUS
+	uni.makePhoneCall({ phoneNumber: '15571648972' })
+	// #endif
+}
+
+// 退出登录
+const handleLogout = () => {
+	uni.showModal({
+		title: '提示',
+		content: '确定要退出登录吗？',
+		success: (res) => {
+			if (res.confirm) {
+				logout()
+				isLogin.value = false
+				loginUser.value = {}
+				// 刷新用户数据（收藏数会归零）
+				getUserData()
+				uni.showToast({ title: '已退出', icon: 'none' })
+			}
+		}
 	})
 }
-getUserInfo()
 </script>
 
 <style lang="scss" scoped>
@@ -114,33 +189,41 @@ getUserInfo()
 		justify-content: center;
 		flex-direction: column;
 		padding: 50rpx 0;
-		.avater{
+		.avatar{
 			width: 160rpx;
 			height: 160rpx;
 			border-radius: 50%;
 			overflow: hidden;
+			border: 4rpx solid rgba(255,255,255,0.8);
+			box-shadow: 0 4rpx 20rpx rgba(0,0,0,0.08);
 			image{
 				width: 100%;
 				height: 100%;
 			}
 		}
-		.ip{
+		.name{
 			font-size: 44rpx;
-			color: #333;
+			color: $text-font-color-1;
 			padding: 20rpx 0 5rpx;
+			font-weight: 600;
 		}
-		.address{
-			font-size: 28rpx;
-			color: #aaa;
+		.login-hint{
+			color: $brand-theme-color;
+			cursor: pointer;
+		}
+		.sub{
+			font-size: 24rpx;
+			color: $text-font-color-3;
 		}
 	}
 	.section{
 		width: 690rpx;
-		margin: 50rpx auto;
+		margin: 25rpx auto;
 		border: 1rpx solid #eee;
-		border-radius: 10rpx;
+		border-radius: 16rpx;
 		box-shadow: 0 0 10rpx rgba(0, 0, 0, 0.05);
 		background-color: #fff;
+		overflow: hidden;
 		.list{
 			.row{
 				position: relative;
@@ -149,7 +232,7 @@ getUserInfo()
 				align-items: center;
 				padding: 0 30rpx;
 				height: 100rpx;
-				border-bottom: 1rpx solid #eee;
+				border-bottom: 1rpx solid #f5f5f5;
 				width: 100%;
 				box-sizing: border-box;
 				.left{
@@ -163,7 +246,7 @@ getUserInfo()
 					}
 					.text{
 						padding-left: 10rpx;
-						color: #666;
+						color: $text-font-color-2;
 						overflow: hidden;
 						text-overflow: ellipsis;
 						white-space: nowrap;
@@ -176,7 +259,7 @@ getUserInfo()
 					margin-left: 10rpx;
 					.text{
 						font-size: 28rpx;
-						color: #aaa;
+						color: $text-font-color-3;
 					}
 				}
 				button{
@@ -190,6 +273,13 @@ getUserInfo()
 			}
 			.row:last-child{
 				border-bottom: none;
+			}
+			.logout-row{
+				justify-content: center;
+				.logout-text{
+					color: $uni-color-error;
+					padding-left: 0;
+				}
 			}
 		}
 	}
