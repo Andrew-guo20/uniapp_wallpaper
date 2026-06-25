@@ -15,7 +15,7 @@
 		"oauth": {
 			"weixin": {
 				"appid": "wxedf7c9be266ef39c",
-				"appsecret": "{{WX_APPSECRET}}"
+				"appsecret": "<后续再替换>"
 			}
 		}
 	},
