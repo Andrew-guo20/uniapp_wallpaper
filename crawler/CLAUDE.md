@@ -6,6 +6,16 @@ This file provides guidance to Claude Code when working in the `crawler/` sub-pr
 
 Python 命令行工具，从多个壁纸源自动采集、下载、处理、上传并导入壁纸数据到 uniCloud 数据库。
 
+## 开发进度
+
+> 同步自根 [CLAUDE.md](../CLAUDE.md) 的「当前开发进度」板块
+
+| 状态 | 说明 |
+|------|------|
+| **当前阶段** | 阶段四才涉及（定时同步），当前无任务 |
+| **已完成** | 4 源 5 阶段流水线，203 张壁纸 |
+| **下一步** | 等待阶段四：集成定时同步 + API Key 配置化 |
+
 ## 目录结构
 
 ```

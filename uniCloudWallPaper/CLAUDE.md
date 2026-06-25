@@ -6,6 +6,16 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 果果壁纸后端 — uniCloud 支付宝云项目，包含云对象、数据库 Schema、uni-id 用户体系、uni-admin 后台管理。负责全部业务逻辑和数据存取。
 
+## 开发进度
+
+> 同步自根 [CLAUDE.md](../CLAUDE.md) 的「当前开发进度」板块
+
+| 状态 | 说明 |
+|------|------|
+| **当前阶段** | 阶段一（用户体系）待开始 |
+| **已完成** | MVP：6 表 + 32 方法，uni-id 模块已安装 |
+| **下一步** | 配置 uni-id + Schema 迁移 + 云对象 _before 改造 |
+
 ## 目录结构
 
 ```
