@@ -8,13 +8,14 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 ## 开发进度
 
-> 同步自根 [CLAUDE.md](../CLAUDE.md) 的「当前开发进度」板块
+> 同步自根 [CLAUDE.md](../CLAUDE.md)
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一（用户体系）待开始 |
-| **已完成** | MVP：6 表 + 32 方法，uni-id 模块已安装 |
-| **下一步** | 配置 uni-id + Schema 迁移 + 云对象 _before 改造 |
+| **当前阶段** | 阶段一 ✅ → 阶段二（架构重构）待开始 |
+| **已完成** | 阶段一：uni-id 配置 + Schema 迁移 + _before 双写 + OR 查询 + 迁移脚本 + 权限升级 + 登录方法 |
+| **下一步** | 阶段二 2.1 模块化拆分 — 创建 common.js + 拆分 5 个模块 + 重写 index.obj.js |
+| **阶段一文件** | `uni-id/config.json`（新增）、`index.obj.js`、`package.json`、3 个 `.schema.json` |
 
 ## 目录结构
 

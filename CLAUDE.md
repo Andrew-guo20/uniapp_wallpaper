@@ -164,24 +164,31 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 > 版本 2.0.0 | 更新于 2025-06-25
 
-### 整体状态：📋 规划完成，待开发
+### 整体状态：🚀 阶段一完成，阶段二待开始
 
 | 根阶段 | 内容 | wallpaper/ | uniCloudWallPaper/ | crawler/ |
 |--------|------|:---:|:---:|:---:|
-| **阶段一** | 用户体系 | ⬜ 阶段一 3天 | ⬜ 阶段一 2.5天 | — |
-| **阶段二** | 后台管理 | — | ⬜ 阶段四 3天 | — |
-| **阶段三** | 功能增强 | ⬜ 阶段二 3.5天 + 阶段三 0.5天 | ⬜ 阶段二 1.5天 + 阶段三 2天 | ⬜ 阶段一 0.5天 |
-| **阶段四** | 运营能力 | ⬜ 阶段四 0.5天 | ⬜ 阶段五 2天 | ⬜ 阶段二+三 1天 |
+| **阶段一** | 用户体系 | ✅ 阶段一 完成 | ✅ 阶段一 完成 | — |
+| **阶段二** | 功能增强/架构重构 | ⬜ 阶段二 3.5天 | ⬜ 阶段二 1.5天 | ⬜ 阶段一 0.5天 |
+| **阶段三** | 后台管理 | — | ⬜ 阶段四 3天 | — |
+| **阶段四** | 运营能力 | ⬜ 阶段三+四 1天 | ⬜ 阶段五 2天 | ⬜ 阶段二+三 1天 |
 | **阶段五** | 测试发布 | ⬜ 阶段五 1天 | ⬜ 阶段六 1天 | — |
 
 ### 各板块进度
 
 | 板块 | 当前阶段 | 状态 | 下一步任务 |
 |------|---------|------|-----------|
-| **wallpaper/** | 阶段一 待开始 | MVP 完成 | 新增登录页 `pages/login/login.vue` |
-| **uniCloudWallPaper/** | 阶段一 待开始 | 6表+32方法 | 创建 uni-id config.json |
-| **crawler/** | 待命 | 4源5阶段 | 阶段一~二暂不涉及，阶段四才开工 |
+| **wallpaper/** | 阶段一 ✅ → 阶段二 | 登录+用户中心已接入 | 收藏功能（预览页改造 + API） |
+| **uniCloudWallPaper/** | 阶段一 ✅ → 阶段二 | uni-id+schema+登录方法已就绪 | 模块化拆分（common.js + 5个模块） |
+| **crawler/** | 待命 | 4源5阶段 | wallpaper 阶段二/三不涉及，后续才开工 |
 | **admin/** | — | ❌ 不存在 | uniCloudWallPaper 阶段四时创建 |
+
+### 阶段一交付清单
+
+| 板块 | 交付内容 |
+|------|---------|
+| **uniCloudWallPaper/** | uni-id 配置、Schema uid/favoriteCount 字段、_before 双写、OR 查询兼容、migrateDeviceToUid 迁移脚本、Schema 权限升级、userLogin/getUserProfile/checkToken 方法 |
+| **wallpaper/** | pages/login/login.vue 登录页、utils/auth.js Token 管理、App.vue 全局登录态、pages/user/user.vue 用户中心改造（头像/收藏入口/退出登录）、API/apis.js 3 个登录方法、preview.vue 评分/下载未登录引导 |
 
 ### 文档状态
 
