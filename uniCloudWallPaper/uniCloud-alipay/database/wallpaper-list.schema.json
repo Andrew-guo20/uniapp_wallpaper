@@ -49,6 +49,10 @@
 			"bsonType": "int",
 			"description": "评分人数"
 		},
+		"favoriteCount": {
+			"bsonType": "int",
+			"description": "收藏人数"
+		},
 		"create_time": {
 			"bsonType": "timestamp",
 			"description": "上传时间"

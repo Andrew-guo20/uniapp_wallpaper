@@ -1,0 +1,26 @@
+{
+	"tokenSecret": "guoguo-wallpaper-token-secret-v2-2025",
+	"tokenExpiresIn": 7200,
+	"tokenExpiresThreshold": 600,
+	"passwordSecret": "guoguo-wallpaper-pwd-secret-v2-2025",
+	"passwordErrorLimit": 6,
+	"bindTokenToDevice": false,
+	"passwordErrorRetryTime": 3600,
+	"autoSetInviteCode": false,
+	"forceInviteCode": false,
+	"removePermissionAndRoleFromToken": false,
+	"maxTokenLength": 10,
+	"preferedWebPlatform": "mp-weixin",
+	"mp-weixin": {
+		"oauth": {
+			"weixin": {
+				"appid": "wxedf7c9be266ef39c",
+				"appsecret": "{{WX_APPSECRET}}"
+			}
+		}
+	},
+	"web": {
+		"tokenExpiresIn": 7200,
+		"tokenExpiresThreshold": 600
+	}
+}

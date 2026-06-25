@@ -1,6 +1,8 @@
 {
   "name": "wallpaper",
-  "dependencies": {},
+  "dependencies": {
+    "uni-id-common": {}
+  },
   "extensions": {
     "uni-cloud-jql": {}
   },

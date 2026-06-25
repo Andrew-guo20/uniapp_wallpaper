@@ -10,6 +10,7 @@
 //   云对象是服务端代码，理应拥有完整数据库权限；schema 权限用于约束客户端。
 const db = uniCloud.database()
 const dbCmd = db.command
+const uniIdCommon = require("uni-id-common")
 
 /**
  * 合并 HTTP 请求参数
@@ -33,7 +34,8 @@ function mergeData(data) {
 module.exports = {
 	_before: function () {
 		const clientInfo = this.getClientInfo()
-		// 获取设备ID作为用户标识（后续接入 uni-id 后改为 clientInfo.uid）
+		// 用户标识：uni-id 登录后 uid 可用，未登录时 fallback 到 deviceId
+		this.uid = clientInfo.uid || ''
 		this.deviceId = clientInfo.deviceId || 'anonymous'
 	},
 
@@ -155,10 +157,12 @@ module.exports = {
 		const userScore = Number(data.userScore)
 
 		// 1. 尝试写入评分记录（唯一索引防重复）
+		// 双写 uid + deviceId，迁移期兼容
 		try {
 			await db.collection('wallpaper-user-score').add({
 				wallId,
 				deviceId: this.deviceId,
+				uid: this.uid || '',
 				userScore,
 				create_time: Date.now()
 			})
@@ -206,10 +210,11 @@ module.exports = {
 		}
 		const wallId = data.wallId
 
-		// 1. 写入下载记录
+		// 1. 写入下载记录（双写 uid + deviceId）
 		await db.collection('wallpaper-download-record').add({
 			wallId,
 			deviceId: this.deviceId,
+			uid: this.uid || '',
 			create_time: Date.now()
 		})
 
@@ -221,27 +226,36 @@ module.exports = {
 			})
 
 		return { errCode: 0, data: { updated: result.updated } }
-	},
-
 	/**
-	 * 获取当前用户信息（下载数 + 评分数）
+	 * 获取当前用户信息（下载数 + 评分数 + 收藏数）
+	 * 迁移期：uid 和 deviceId OR 查询，覆盖两种标识的数据
 	 */
 	async getUserInfo(data = {}) {
 			data = mergeData.call(this, data)
+		// 迁移期兼容：uid 和 deviceId OR 查询
+		const userWhere = this.uid
+			? dbCmd.or([{ uid: this.uid }, { deviceId: this.deviceId }])
+			: { deviceId: this.deviceId }
+
 		const [downloadResult, scoreResult] = await Promise.all([
-			db.collection('wallpaper-download-record')
-				.where({ deviceId: this.deviceId })
-				.count(),
-			db.collection('wallpaper-user-score')
-				.where({ deviceId: this.deviceId })
-				.count()
+			db.collection('wallpaper-download-record').where(userWhere).count(),
+			db.collection('wallpaper-user-score').where(userWhere).count()
 		])
+
+		// 收藏数：仅登录用户有（收藏基于 uid）
+		let favoriteSize = 0
+		if (this.uid) {
+			const favResult = await db.collection('wallpaper-favorites')
+				.where({ uid: this.uid }).count()
+			favoriteSize = favResult.total
+		}
 
 		return {
 			errCode: 0,
 			data: {
 				downloadSize: downloadResult.total,
-				scoreSize: scoreResult.total
+				scoreSize: scoreResult.total,
+				favoriteSize
 			}
 		}
 	},
@@ -265,9 +279,14 @@ module.exports = {
 			return { errCode: 400, errMsg: 'type 参数错误' }
 		}
 
+		// 迁移期兼容：uid 优先，OR 查询覆盖 deviceId
+		const matchCondition = this.uid
+			? dbCmd.or([{ uid: this.uid }, { deviceId: this.deviceId }])
+			: { deviceId: this.deviceId }
+
 		const result = await db.collection(collectionName)
 			.aggregate()
-			.match({ deviceId: this.deviceId })
+			.match(matchCondition)
 			.sort({ create_time: -1 })
 			.skip(skip)
 			.limit(pageSize)
@@ -863,5 +882,125 @@ module.exports = {
 			.where({ _id: data._id })
 			.remove()
 		return { errCode: 0, data: { removed: true } }
+	},
+
+	// ============================================================
+	//  用户登录
+	// ============================================================
+
+	async userLogin(data = {}) {
+			data = mergeData.call(this, data)
+		if (!data.code) {
+			return { errCode: 400, errMsg: "缺少登录凭证code" }
+		}
+
+		const uniID = uniIdCommon.createInstance({
+			context: this.getUniCloudRequestContext()
+		})
+
+		const loginResult = await uniID.loginByWeixin({ code: data.code })
+		if (loginResult.errCode !== 0) {
+			return loginResult
+		}
+
+		// 登录成功 -> 触发数据迁移
+		const clientInfo = this.getClientInfo()
+		this.uid = loginResult.uid
+		this.deviceId = clientInfo.deviceId || "anonymous"
+		await this.migrateDeviceToUid()
+
+		return {
+			errCode: 0,
+			data: {
+				token: loginResult.token,
+				tokenExpired: loginResult.tokenExpired,
+				uid: loginResult.uid,
+				userInfo: loginResult.userInfo || {}
+			}
+		}
+	},
+
+	async getUserProfile(data = {}) {
+			data = mergeData.call(this, data)
+		if (!this.uid) {
+			return { errCode: 401, errMsg: "请先登录" }
+		}
+
+		const uniID = uniIdCommon.createInstance({
+			context: this.getUniCloudRequestContext()
+		})
+
+		const result = await uniID.getUserInfoByUid({ uid: this.uid })
+		if (result.errCode !== 0) return result
+
+		const user = result.userInfo || {}
+		return {
+			errCode: 0,
+			data: {
+				uid: this.uid,
+				nickname: user.nickname || "",
+				avatar: user.avatar_file?.url || user.avatar || ""
+			}
+		}
+	},
+
+	async checkToken(data = {}) {
+			data = mergeData.call(this, data)
+		if (!data.token && !this.uid) {
+			return { errCode: 0, data: { valid: false } }
+		}
+
+		const uniID = uniIdCommon.createInstance({
+			context: this.getUniCloudRequestContext()
+		})
+
+		try {
+			const result = await uniID.checkToken(data.token || "")
+			return { errCode: 0, data: { valid: result.errCode === 0, uid: result.uid || "" } }
+		} catch (e) {
+			return { errCode: 0, data: { valid: false } }
+		}
+	},
+
+	// ============================================================
+	//  用户数据迁移
+	// ============================================================
+
+	/**
+	 * 将 deviceId 的历史数据迁移到 uid
+	 * 用户首次登录后调用，幂等（可重复执行）
+	 * @returns {Object}  { migrated: { score: n, download: n } }
+	 */
+	async migrateDeviceToUid(data = {}) {
+			data = mergeData.call(this, data)
+		if (!this.uid) {
+			return { errCode: 401, errMsg: '请先登录' }
+		}
+
+		// 迁移评分记录：deviceId 匹配但 uid 为空
+		const scoreResult = await db.collection('wallpaper-user-score')
+			.where({
+				deviceId: this.deviceId,
+				uid: dbCmd.or([{ $eq: '' }, { $exists: false }])
+			})
+			.update({ uid: this.uid })
+
+		// 迁移下载记录
+		const dlResult = await db.collection('wallpaper-download-record')
+			.where({
+				deviceId: this.deviceId,
+				uid: dbCmd.or([{ $eq: '' }, { $exists: false }])
+			})
+			.update({ uid: this.uid })
+
+		return {
+			errCode: 0,
+			data: {
+				migrated: {
+					score: scoreResult.updated || 0,
+					download: dlResult.updated || 0
+				}
+			}
+		}
 	}
 }

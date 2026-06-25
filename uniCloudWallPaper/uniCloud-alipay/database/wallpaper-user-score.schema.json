@@ -4,7 +4,7 @@
 	"required": ["wallId", "deviceId", "userScore"],
 	"permission": {
 		"read": true,
-		"create": true,
+		"create": "auth.uid != null",
 		"update": false,
 		"delete": false
 	},
@@ -18,7 +18,11 @@
 		},
 		"deviceId": {
 			"bsonType": "string",
-			"description": "设备ID（暂代用户标识，后续迁移到openid）"
+			"description": "设备ID（暂代用户标识，登录后迁移到uid）"
+		},
+		"uid": {
+			"bsonType": "string",
+			"description": "用户uid（uni-id登录后有值，迁移期可与deviceId并存）"
 		},
 		"userScore": {
 			"bsonType": "double",
