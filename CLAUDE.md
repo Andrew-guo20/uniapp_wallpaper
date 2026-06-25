@@ -116,3 +116,43 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 - 壁纸 `status` 字段：0=待审核 / 1=已发布 / 2=已下架
 - 微信小程序 AppID：`wxedf7c9be266ef39c`
 - 支付宝云不支持的功能：`dbCmd.regex()`、`aggregate().sample()`
+
+## 子项目索引
+
+| 子项目 | 目录 | CLAUDE.md | 开发计划 | 说明 |
+|--------|------|-----------|---------|------|
+| 前端小程序 | `wallpaper/` | [wallpaper/CLAUDE.md](wallpaper/CLAUDE.md) | [wallpaper/开发计划.md](wallpaper/开发计划.md) | uni-app Vue3，8 个页面 |
+| 云端后端 | `uniCloudWallPaper/` | [uniCloudWallPaper/CLAUDE.md](uniCloudWallPaper/CLAUDE.md) | [uniCloudWallPaper/开发计划.md](uniCloudWallPaper/开发计划.md) | 云对象 + 数据库 + uni-admin |
+| 数据采集器 | `crawler/` | [crawler/CLAUDE.md](crawler/CLAUDE.md) | [crawler/开发计划.md](crawler/开发计划.md) | Python 壁纸采集 |
+
+## 当前开发进度
+
+> 版本 2.0.0 | 更新于 2025-06-25
+
+### 整体状态：📋 规划完成，待开发
+
+| 阶段 | 内容 | 工期 | 状态 | 负责板块 |
+|------|------|------|------|---------|
+| **阶段一** | uni-id 用户体系 | 3 天 | ⬜ 待开始 | wallpaper + uniCloudWallPaper |
+| **阶段二** | uni-admin 后台管理 | 3 天 | ⬜ 待开始 | uniCloudWallPaper + admin/ |
+| **阶段三** | 功能增强（收藏/评论/推荐/投稿） | 4 天 | ⬜ 待开始 | wallpaper + uniCloudWallPaper |
+| **阶段四** | 运营能力（推送/定时/统计） | 2 天 | ⬜ 待开始 | wallpaper + uniCloudWallPaper + crawler |
+| **阶段五** | 测试与发布 | 2 天 | ⬜ 待开始 | 全部 |
+
+### 各板块进度
+
+| 板块 | 当前状态 | 下一步 |
+|------|---------|--------|
+| **wallpaper/** | MVP 完成（8 页面 + 12 API） | 接入 uni-id 登录 + 新增收藏/评论/投稿页面 |
+| **uniCloudWallPaper/** | 6 表 + 32 方法，uni-id 模块已安装待配置 | 配置 uni-id + Schema 迁移 + 模块化拆分 |
+| **crawler/** | 4 源 5 阶段流水线，203 张壁纸 | 集成定时同步能力 |
+| **admin/** | ❌ 不存在 | 创建 uni-admin 项目 |
+
+### 文档状态
+
+| 文档 | 状态 |
+|------|------|
+| [PRD.md](PRD.md) | ✅ 已完成 |
+| [开发计划.md](开发计划.md) | ✅ 已完成（总计划） |
+| [CHANGELOG.md](CHANGELOG.md) | ✅ 已完成 |
+| 子项目开发计划 ×3 | ✅ 已完成 |
