@@ -194,6 +194,79 @@ def process_category(category_name, config, args):
     return result
 
 
+def run_health_check():
+    """检查所有数据源的可用状态"""
+    import time
+    from config import UNICLOUD_FUNCTION_URL, REQUEST_TIMEOUT
+
+    print("数据源健康检查\n")
+    results = {}
+
+    for name, source in SOURCE_INSTANCES.items():
+        start = time.time()
+        try:
+            if name == "bing":
+                items = source.fetch_daily(days=1)
+                status = "OK" if items else "EMPTY"
+                detail = f"获取 {len(items)} 张"
+            elif name == "wallhaven":
+                items = source.search_all_categories("test", target_count=1)
+                status = "OK" if items else "EMPTY"
+                detail = f"测试搜索返回 {len(items)} 张"
+            elif name == "unsplash":
+                if not source.access_key:
+                    status = "SKIP"
+                    detail = "未配置 API Key"
+                else:
+                    items = source.search("test", per_page=1)
+                    status = "OK" if items else "EMPTY"
+                    detail = f"测试搜索返回 {len(items)} 张"
+            elif name == "pexels":
+                if not source.api_key:
+                    status = "SKIP"
+                    detail = "未配置 API Key"
+                else:
+                    items = source.search("test", per_page=1)
+                    status = "OK" if items else "EMPTY"
+                    detail = f"测试搜索返回 {len(items)} 张"
+        except Exception as e:
+            status = "ERROR"
+            detail = str(e)[:100]
+
+        elapsed = (time.time() - start) * 1000
+        icon = {"OK": "✅", "EMPTY": "⚠️", "SKIP": "⏭️", "ERROR": "❌"}.get(status, "❓")
+        print(f"  {icon} {name:10s}  {status:6s}  {elapsed:6.0f}ms  {detail}")
+        results[name] = {"status": status, "latency_ms": int(elapsed), "detail": detail}
+
+    # 云对象连通性检查
+    print(f"\n  云对象连通性检查: {UNICLOUD_FUNCTION_URL}")
+    try:
+        import requests
+        resp = requests.get(UNICLOUD_FUNCTION_URL, timeout=REQUEST_TIMEOUT)
+        print(f"  ✅ 云对象可访问 (HTTP {resp.status_code})")
+    except Exception as e:
+        print(f"  ❌ 云对象不可达: {e}")
+
+    return results
+
+
+def get_category_wall_counts():
+    """从云端获取各分类已有壁纸数，用于调整采集策略"""
+    import requests
+    from config import UNICLOUD_FUNCTION_URL, REQUEST_TIMEOUT
+    try:
+        resp = requests.post(
+            f"{UNICLOUD_FUNCTION_URL}/adminGetWallStats",
+            json={}, timeout=REQUEST_TIMEOUT
+        )
+        result = resp.json()
+        if result.get("errCode") == 0:
+            return result["data"].get("byStatus", {})
+    except Exception:
+        pass
+    return {}
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="壁纸采集器 - uniCloud Wallpaper 数据采集",
@@ -228,6 +301,10 @@ def main():
                         help="无交互模式：静默运行，输出 JSON 结果，错误写入日志文件")
     parser.add_argument("--json", action="store_true",
                         help="以 JSON 格式输出结果（供自动化调用）")
+    parser.add_argument("--health-check", action="store_true",
+                        help="检查所有数据源可用状态")
+    parser.add_argument("--target-per-category", type=int, default=0,
+                        help="每个分类的目标壁纸总数，不足时自动增加采集量（默认: 不限制）")
 
     args = parser.parse_args()
 
@@ -256,6 +333,10 @@ def main():
         print("  pexels    - Pexels（需注册获取 API Key）")
         return
 
+    if args.health_check:
+        run_health_check()
+        return
+
     # 确定要采集的分类
     if args.categories:
         categories = {}
@@ -279,10 +360,43 @@ def main():
     print(f"║  模式: {'本地(不上传)' if args.local else '云端':<30s} ║")
     print(f"╚══════════════════════════════════════════╝")
 
+    # 根据目标壁纸数动态调整采集量
+    if args.target_per_category > 0 and not args.local:
+        from config import UNICLOUD_FUNCTION_URL
+        if UNICLOUD_FUNCTION_URL:
+            print(f"\n检查各分类壁纸数量（目标: {args.target_per_category} 张/类）...")
+            for category_name, config in categories.items():
+                try:
+                    import requests
+                    resp = requests.post(
+                        f"{UNICLOUD_FUNCTION_URL}/adminGetWalls",
+                        json={"classid": config["classify_id"], "status": 1, "pageSize": 1},
+                        timeout=10
+                    )
+                    data = resp.json()
+                    current = data.get("data", {}).get("total", 0) if data.get("errCode") == 0 else 0
+                    shortage = args.target_per_category - current
+                    if shortage > 0:
+                        adjusted = max(shortage, args.num)
+                        print(f"  {category_name}: 已有 {current} 张，需补充 {shortage} 张 → 本次采集 {adjusted} 张")
+                        config["_target"] = adjusted
+                    else:
+                        print(f"  {category_name}: 已有 {current} 张，已达目标 → 跳过")
+                        config["_skip"] = True
+                except Exception as e:
+                    print(f"  {category_name}: 查询失败 ({e})，使用默认数量 {args.num}")
+        else:
+            print("未配置云对象 URL，跳过数量检查")
+
     start_time = datetime.now()
     results = {"categories": {}, "total": {"collected": 0, "downloaded": 0, "uploaded": 0, "imported": 0, "skipped": 0}}
 
     for category_name, config in categories.items():
+        if config.get("_skip"):
+            results["categories"][category_name] = {"collected": 0, "downloaded": 0, "uploaded": 0, "imported": 0, "skipped": 0, "msg": "已达目标数量"}
+            continue
+        if config.get("_target"):
+            args.num = config["_target"]
         result = process_category(category_name, config, args)
         if result:
             results["categories"][category_name] = result
