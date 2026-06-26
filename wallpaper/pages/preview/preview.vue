@@ -703,30 +703,105 @@ onShareTimeline(()=>{
 
 .commentPopup{
 	background: #fff;
-	border-radius: 24rpx 24rpx 0 0;
-	padding-bottom: env(safe-area-inset-bottom);
+	border-radius: 32rpx 32rpx 0 0;
+	padding: 0 0 env(safe-area-inset-bottom) 0;
+	max-height: 60vh;
+	display: flex;
+	flex-direction: column;
+
+	.popHeader{
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 30rpx 30rpx 20rpx;
+		border-bottom: 1rpx solid #f0f0f0;
+		flex-shrink: 0;
+		.title{ font-size: 30rpx; font-weight: 600; color: #1a1a2e; }
+		.close{ padding: 8rpx; }
+	}
+
 	.commentList{
-		max-height: 500rpx;
+		flex: 1;
+		max-height: 400rpx;
 		padding: 0 30rpx;
+
 		.commentItem{
-			padding: 20rpx 0;
+			padding: 24rpx 0;
 			border-bottom: 1rpx solid #f5f5f5;
+
+			&:last-child{ border-bottom: none; }
+
 			.commentMeta{
 				display: flex;
 				justify-content: space-between;
-				margin-bottom: 8rpx;
-				.commentUid{ font-size: 24rpx; color: #999; }
-				.commentTime{ font-size: 22rpx; color: #ccc; }
+				align-items: baseline;
+				margin-bottom: 10rpx;
+
+				.commentUser{
+					font-size: 24rpx;
+					font-weight: 600;
+					color: #1a1a2e;
+				}
+
+				.commentTime{
+					font-size: 20rpx;
+					color: #9ca3af;
+				}
 			}
-			.commentContent{ font-size: 28rpx; color: #333; line-height: 1.5; }
+
+			.commentContent{
+				font-size: 28rpx;
+				color: #374151;
+				line-height: 1.6;
+			}
 		}
-		.loadMore{ text-align: center; padding: 20rpx; color: $brand-theme-color; font-size: 24rpx; }
+
+		.loadMore{
+			text-align: center;
+			padding: 24rpx 0;
+			font-size: 24rpx;
+			color: #28B389;
+			font-weight: 500;
+		}
 	}
-	.commentEmpty{ text-align: center; padding: 60rpx 0; color: #ccc; font-size: 26rpx; }
+
+	.commentEmpty{
+		text-align: center;
+		padding: 80rpx 0;
+		color: #9ca3af;
+		font-size: 26rpx;
+		flex: 1;
+	}
+
 	.commentInput{
-		display: flex; align-items: center; padding: 16rpx 30rpx; border-top: 1rpx solid #f0f0f0;
-		input{ flex: 1; height: 64rpx; background: #f5f5f5; border-radius: 32rpx; padding: 0 24rpx; font-size: 26rpx; }
-		.sendBtn{ margin-left: 16rpx; padding: 12rpx 28rpx; background: $brand-theme-color; color: #fff; border-radius: 32rpx; font-size: 26rpx; }
+		display: flex;
+		align-items: center;
+		padding: 16rpx 24rpx;
+		border-top: 1rpx solid #f0f0f0;
+		gap: 16rpx;
+		flex-shrink: 0;
+
+		input{
+			flex: 1;
+			height: 72rpx;
+			background: #f5f5f5;
+			border-radius: 36rpx;
+			padding: 0 28rpx;
+			font-size: 26rpx;
+			color: #1a1a2e;
+		}
+
+		.sendBtn{
+			padding: 14rpx 28rpx;
+			background: #28B389;
+			color: #fff;
+			border-radius: 36rpx;
+			font-size: 26rpx;
+			font-weight: 600;
+			flex-shrink: 0;
+
+			&:active{ opacity: 0.85; }
+		}
 	}
 }
 </style>
