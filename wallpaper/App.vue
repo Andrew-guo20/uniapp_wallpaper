@@ -10,6 +10,9 @@
 		onLaunch: function() {
 			console.log('App Launch')
 			this.checkLoginStatus()
+			// #ifdef MP-WEIXIN
+			this.initPushListener()
+			// #endif
 		},
 		onShow: function() {
 			console.log('App Show')
@@ -41,6 +44,22 @@
 					console.error('checkLoginStatus error:', e)
 					this.globalData.isLogin = false
 				}
+			},
+			// 初始化推送监听
+			initPushListener() {
+				// uni-push 2.0 客户端监听
+				uni.onPushMessage((res) => {
+					console.log('Push message:', res)
+					const payload = res.data?.payload || {}
+					// 根据推送类型跳转
+					if (payload.type === 'new_wallpaper') {
+						uni.navigateTo({ url: '/pages/preview/preview?id=' + payload.wallId })
+					} else if (payload.type === 'upload_review') {
+						uni.showToast({ title: '你的投稿审核结果已更新', icon: 'none' })
+					} else if (payload.type === 'announcement') {
+						uni.navigateTo({ url: '/pages/notice/detail?id=' + payload.noticeId })
+					}
+				})
 			}
 		}
 	}

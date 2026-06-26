@@ -13,6 +13,12 @@
 			}
 		},
 		{
+			"path": "pages/upload/upload",
+			"style": {
+				"navigationBarTitleText": "投稿"
+			}
+		},
+		{
 			"path": "pages/classify/classify",
 			"style": {
 				"navigationBarTitleText": "分类"

@@ -50,6 +50,19 @@
 					</view>
 				</navigator>
 
+				<!-- 我的投稿 — v2.0 新增 -->
+				<navigator url="/pages/upload/upload" open-type="navigate">
+					<view class="row">
+						<view class="left">
+							<uni-icons type="image-filled" size="20"></uni-icons>
+							<view class="text">我的投稿</view>
+						</view>
+						<view class="right">
+							<uni-icons type="right" size="15" color="#aaa"></uni-icons>
+						</view>
+					</view>
+				</navigator>
+
 				<navigator url="/pages/classlist/classlist?name=我的评分&type=score" open-type="reLaunch">
 					<view class="row">
 						<view class="left">
