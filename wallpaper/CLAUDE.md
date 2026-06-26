@@ -19,10 +19,11 @@ This file provides guidance to Claude Code when working in the `wallpaper/` sub-
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一 ✅ → 阶段二（互动功能）待开始 |
-| **已完成** | 阶段一：登录页 + Token管理 + 用户中心改造 + API扩展 + 未登录引导 |
-| **下一步** | 阶段二 2.1 壁纸收藏 — 预览页改造 + 列表页收藏模式 + API 层 |
-| **阶段一文件** | `pages/login/login.vue`（新增）、`utils/auth.js`（新增）、`App.vue`、`pages/user/user.vue`、`API/apis.js`、`pages/preview/preview.vue`、`pages.json` |
+| **当前阶段** | 阶段一~四 ✅ → 阶段五（测试发布）待开始 |
+| **已完成** | 登录+收藏+评论+推荐+投稿+推送监听 |
+| **下一步** | 阶段五：全功能回归测试 + 性能优化 + 审核准备 |
+| **新增文件** | `pages/login/login.vue`、`pages/upload/upload.vue`、`utils/auth.js` |
+| **改造文件** | `App.vue`、`pages/user/user.vue`、`pages/preview/preview.vue`、`pages/search/search.vue`、`pages/index/index.vue`、`API/apis.js`、`pages.json` |
 
 ## 目录结构
 

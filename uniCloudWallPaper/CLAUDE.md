@@ -12,10 +12,10 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一 ✅ → 阶段二（架构重构）待开始 |
-| **已完成** | 阶段一：uni-id 配置 + Schema 迁移 + _before 双写 + OR 查询 + 迁移脚本 + 权限升级 + 登录方法 |
-| **下一步** | 阶段二 2.1 模块化拆分 — 创建 common.js + 拆分 5 个模块 + 重写 index.obj.js |
-| **阶段一文件** | `uni-id/config.json`（新增）、`index.obj.js`、`package.json`、3 个 `.schema.json` |
+| **当前阶段** | 阶段一~三 ✅ → 阶段四（后台管理）待开始 |
+| **已完成** | uni-id配置+Schema迁移+模块化拆分+收藏/评论/推荐/投稿/搜索API |
+| **下一步** | 阶段四：创建 uni-admin 后台管理项目 |
+| **架构** | 10模块文件 + 10张Schema + 51个云对象方法 |
 
 ## 目录结构
 
