@@ -192,6 +192,18 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 | **crawler/** | API Key 配置化、云端去重、headless 无交互模式、JSON 输出、健康检查、目标数量智能策略 |
 | **admin/** | 仪表盘（4色统计卡+6快捷入口）、壁纸管理（状态Tab+审核+分页）、分类/轮播图/公告/评论管理、投稿审核（通过自动发布） |
 
+### 部署状态
+
+| 项目 | 状态 | 说明 |
+|------|:---:|------|
+| 云对象 | ⚠️ 待部署 | `package.json` 已修复（extensions 改为数组格式），HBuilderX 中重新上传 |
+| 数据库 Schema | ⬜ 待部署 | 10 个 Schema 需在 HBuilderX 中右键上传 |
+| uni-id 公共模块 | ⬜ 待部署 | uni-config-center + uni-id-common 需上传 |
+| 前端 wallpaper/ | ⬜ 待运行 | 关联服务空间后编译到微信开发者工具 |
+| 后台 admin/ | ⬜ 待运行 | 运行到浏览器 H5 |
+
+**部署顺序：** 公共模块 → Schema → 云对象 → 前端运行
+
 ### 文档状态
 
 | 文档 | 状态 |
@@ -199,4 +211,6 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 | [PRD.md](PRD.md) | ✅ 已完成 |
 | [开发计划.md](开发计划.md) | ✅ 已完成（总计划） |
 | [CHANGELOG.md](CHANGELOG.md) | ✅ 已完成 |
-| 子项目开发计划 ×3 | ✅ 已完成 |
+| [wallpaper/开发计划.md](wallpaper/开发计划.md) | ✅ 前端任务 |
+| [uniCloudWallPaper/开发计划.md](uniCloudWallPaper/开发计划.md) | ✅ 后端任务 |
+| [crawler/开发计划.md](crawler/开发计划.md) | ✅ 采集器任务 |

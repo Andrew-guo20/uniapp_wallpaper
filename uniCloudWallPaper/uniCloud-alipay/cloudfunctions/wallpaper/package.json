@@ -1,11 +1,6 @@
 {
   "name": "wallpaper",
-  "dependencies": {
-    "uni-id-common": {}
-  },
-  "extensions": {
-    "uni-cloud-jql": {}
-  },
+  "extensions": ["uni-cloud-jql"],
   "cloudfunction-config": {
     "timeout": 30
   }
