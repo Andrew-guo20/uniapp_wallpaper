@@ -1,0 +1,23 @@
+// 搜索历史记录表
+{
+	"bsonType": "object",
+	"required": ["keyword"],
+	"permission": {
+		"read": false,
+		"create": true,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": { "description": "系统自动生成" },
+		"keyword": { "bsonType": "string", "description": "搜索关键词" },
+		"deviceId": { "bsonType": "string", "description": "设备ID" },
+		"uid": { "bsonType": "string", "description": "用户uid" },
+		"create_time": { "bsonType": "timestamp", "description": "搜索时间" }
+	},
+	"index": [
+		{ "name": "idx_uid_time", "fieldList": { "uid": 1, "create_time": -1 } },
+		{ "name": "idx_device_time", "fieldList": { "deviceId": 1, "create_time": -1 } },
+		{ "name": "idx_create_time", "fieldList": { "create_time": -1 } }
+	]
+}

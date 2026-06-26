@@ -57,20 +57,44 @@
 <script setup>
 import {ref} from "vue";
 import {onLoad,onUnload,onReachBottom} from "@dcloudio/uni-app";
-import {apiSearchData} from "@/API/apis.js";
+import {apiSearchData,apiGetHotSearchKeywords,apiGetSearchHistory,apiClearSearchHistory} from "@/API/apis.js";
+import {isLoggedIn} from "@/utils/auth.js";
 
 //查询参数
-const queryParams = ref({	
+const queryParams = ref({
 	pageNum:1,
 	pageSize:12,
 	keyword:""
 })
 
-//搜索历史词
+//搜索历史词（云端优先，本地兜底）
 const historySearch = ref(uni.getStorageSync('historySearch') || []);
 
 //热门搜索词
-const recommendList = ref(["风景","动漫","游戏","美女"]);
+const recommendList = ref([]);
+
+// 加载云端数据
+const loadCloudData = async () => {
+	// 热门搜索词
+	try {
+		const res = await apiGetHotSearchKeywords()
+		if (res.errCode === 0 && res.data.length) {
+			recommendList.value = res.data.map(item => item.keyword)
+		}
+	} catch(e) {}
+
+	// 搜索历史（已登录用户从云端加载）
+	if (isLoggedIn()) {
+		try {
+			const res = await apiGetSearchHistory()
+			if (res.errCode === 0 && res.data.length) {
+				historySearch.value = res.data
+				uni.setStorageSync('historySearch', res.data)
+			}
+		} catch(e) {}
+	}
+}
+loadCloudData()
 
 //没有更多
 const noData = ref(false);
@@ -107,10 +131,13 @@ const clickTab = (value)=>{
 const removeHistory = ()=>{
 	uni.showModal({
 		title:"是否清空历史搜索？",
-		success:res=>{
+		success:async (res)=>{
 			if(res.confirm){
 				uni.removeStorageSync('historySearch');
 				historySearch.value = [];
+				if (isLoggedIn()) {
+					try { await apiClearSearchHistory() } catch(e) {}
+				}
 			}
 		}
 	})

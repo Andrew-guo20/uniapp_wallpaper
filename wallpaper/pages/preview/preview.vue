@@ -31,6 +31,16 @@
 					<view class="text">{{currentInfo.score}}分</view>
 				</view>
 
+				<view class="box" @click="clickFavorite">
+					<uni-icons :type="isFavorited ? 'heart-filled' : 'heart'" size="23" :color="isFavorited ? '#ff4d4f' : '#fff'"></uni-icons>
+					<view class="text">收藏</view>
+				</view>
+
+				<view class="box" @click="clickComments">
+					<uni-icons type="chat" size="23"></uni-icons>
+					<view class="text">评论</view>
+				</view>
+
 				<view class="box" @click="clickDownload">
 					<uni-icons type="download" size="23"></uni-icons>
 					<view class="text">下载</view>
