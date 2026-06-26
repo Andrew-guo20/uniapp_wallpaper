@@ -20,6 +20,7 @@ const wallpaperRecommend = require('./wallpaper-recommend')
 const wallpaperUpload = require('./wallpaper-upload')
 const wallpaperSearch = require('./wallpaper-search')
 const wallpaperAdmin = require('./wallpaper-admin')
+const wallpaperAdminStats = require('./wallpaper-admin-stats')
 
 module.exports = {
 	_before: function () {
@@ -97,5 +98,16 @@ module.exports = {
 	adminGetNews:    wallpaperAdmin.adminGetNews,
 	adminCreateNews: wallpaperAdmin.adminCreateNews,
 	adminUpdateNews: wallpaperAdmin.adminUpdateNews,
-	adminDeleteNews: wallpaperAdmin.adminDeleteNews
+	adminDeleteNews: wallpaperAdmin.adminDeleteNews,
+
+	// ---- 后台管理（数据统计/评论/投稿审核/用户） [NEW] ----
+	adminGetDashboardStats: wallpaperAdminStats.adminGetDashboardStats,
+	adminGetDownloadTrend:  wallpaperAdminStats.adminGetDownloadTrend,
+	adminGetHotWalls:       wallpaperAdminStats.adminGetHotWalls,
+	adminGetComments:       wallpaperAdminStats.adminGetComments,
+	adminReviewComment:     wallpaperAdminStats.adminReviewComment,
+	adminDeleteComment:     wallpaperAdminStats.adminDeleteComment,
+	adminGetUploads:        wallpaperAdminStats.adminGetUploads,
+	adminReviewUpload:      wallpaperAdminStats.adminReviewUpload,
+	adminGetUsers:          wallpaperAdminStats.adminGetUsers
 }
