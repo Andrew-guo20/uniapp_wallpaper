@@ -11,6 +11,42 @@ from config import UNICLOUD_FUNCTION_URL, REQUEST_TIMEOUT
 EXPORT_DIR = "./exports"
 
 
+def check_wall_exists(picurl):
+    """检查壁纸 URL 是否已在数据库中"""
+    try:
+        url = f"{UNICLOUD_FUNCTION_URL}/adminCheckWallExists"
+        resp = requests.post(url, json={"picurl": picurl}, timeout=REQUEST_TIMEOUT)
+        result = resp.json()
+        return result.get("errCode") == 0 and result.get("data", {}).get("exists", False)
+    except Exception as e:
+        print(f"  [WARN] 去重检查失败: {e}")
+        return False
+
+
+def deduplicate_walls(walls):
+    """
+    对壁纸列表进行云端去重，跳过已存在的壁纸
+
+    Returns:
+        (new_walls, skipped_count): 去重后的壁纸列表和跳过的数量
+    """
+    if not UNICLOUD_FUNCTION_URL:
+        return walls, 0  # 无法连接云端时跳过去重
+
+    new_walls = []
+    skipped = 0
+    for w in walls:
+        picurl = w.get("picurl", "")
+        if picurl and check_wall_exists(picurl):
+            skipped += 1
+        else:
+            new_walls.append(w)
+
+    if skipped > 0:
+        print(f"  [去重] 跳过 {skipped} 张已存在的壁纸")
+    return new_walls, skipped
+
+
 def import_to_cloud(walls, classify_id):
     """
     通过云对象 adminBatchImport 批量写入数据库
@@ -24,6 +60,12 @@ def import_to_cloud(walls, classify_id):
     """
     if not walls:
         print("没有可导入的数据")
+        return 0
+
+    # 云端去重
+    walls, skipped = deduplicate_walls(walls)
+    if not walls:
+        print("  [去重] 所有壁纸均已存在，无需导入")
         return 0
 
     import_data = []

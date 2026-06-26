@@ -7,4 +7,5 @@ unpackage/
 crawler/__pycache__/
 crawler/downloads/
 crawler/exports/
+crawler/.env
 *.pyc

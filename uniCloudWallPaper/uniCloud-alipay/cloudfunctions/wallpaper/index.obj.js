@@ -93,6 +93,7 @@ module.exports = {
 	adminGetWallStats: wallpaperAdmin.adminGetWallStats,
 	adminUpload:       wallpaperAdmin.adminUpload,
 	adminBatchImport:  wallpaperAdmin.adminBatchImport,
+	adminCheckWallExists: wallpaperAdmin.adminCheckWallExists,
 
 	// ---- 后台管理（公告） ----
 	adminGetNews:    wallpaperAdmin.adminGetNews,

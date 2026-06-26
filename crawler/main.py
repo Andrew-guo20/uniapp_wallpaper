@@ -21,6 +21,9 @@
   - 配置环境变量（API Key、UNICLOUD_FUNCTION_URL 等），见 config.py
 """
 import argparse
+import json
+import logging
+import os
 import sys
 from datetime import datetime
 
@@ -91,22 +94,26 @@ def process_category(category_name, config, args):
         category_name: 分类中文名
         config: 分类配置 dict
         args: 命令行参数
+
+    Returns:
+        dict: { collected, downloaded, uploaded, imported, skipped }
     """
     classify_id = config["classify_id"]
     target_count = args.num
     sources_to_use = args.sources if args.sources else ["bing", "wallhaven", "unsplash", "pexels"]
+    result = {"collected": 0, "downloaded": 0, "uploaded": 0, "imported": 0, "skipped": 0}
 
     if args.local and not classify_id:
         classify_id = "LOCAL_" + category_name
 
-    print(f"\n\n{'#' * 60}")
-    print(f"  分类: {category_name}  |  classify_id: {classify_id}")
-    print(f"  数据源: {', '.join(sources_to_use)}  |  目标: {target_count} 张")
-    print(f"{'#' * 60}")
+    if not args.headless:
+        print(f"\n\n{'#' * 60}")
+        print(f"  分类: {category_name}  |  classify_id: {classify_id}")
+        print(f"  数据源: {', '.join(sources_to_use)}  |  目标: {target_count} 张")
+        print(f"{'#' * 60}")
 
-    if not classify_id:
+    if not classify_id and not args.headless:
         print(f"\n[WARN] 分类「{category_name}」未配置 classify_id，使用本地模式")
-        print(f"  请先在数据库中创建此分类，然后将 _id 填入 classify_map.py")
 
     # --- 阶段1: 采集 ---
     all_items = []
@@ -116,11 +123,9 @@ def process_category(category_name, config, args):
         keyword = config.get("search_terms", {}).get(src, category_name)
         items = collect_from_source(src, keyword, per_source)
         all_items.extend(items)
-
         if len(all_items) >= target_count:
             break
 
-    # 去重（按 source_id）
     seen = set()
     unique_items = []
     for item in all_items:
@@ -130,47 +135,63 @@ def process_category(category_name, config, args):
             unique_items.append(item)
 
     unique_items = unique_items[:target_count]
-    print(f"\n  去重后共 {len(unique_items)} 张壁纸")
+    result["collected"] = len(unique_items)
+
+    if not args.headless:
+        print(f"\n  去重后共 {len(unique_items)} 张壁纸")
 
     if not unique_items:
-        print(f"  [SKIP] 分类「{category_name}」无数据，跳过")
-        return
+        return result
 
-    # --- 阶段2: 下载原图 ---
-    print(f"\n--- 阶段2: 下载原图 → downloads/{category_name}/originals/ ---")
+    # --- 阶段2: 下载 ---
+    if not args.headless:
+        print(f"\n--- 阶段2: 下载原图 ---")
     downloaded = download_batch(unique_items, category_name)
-    print(f"  下载成功: {len(downloaded)}/{len(unique_items)}")
+    result["downloaded"] = len(downloaded)
 
+    if not args.headless:
+        print(f"  下载成功: {len(downloaded)}/{len(unique_items)}")
     if not downloaded:
-        return
+        return result
 
-    # --- 阶段3: 生成缩略图 ---
-    print(f"\n--- 阶段3: 生成缩略图 → downloads/{category_name}/thumbnails/ ---")
+    # --- 阶段3: 缩略图 ---
+    if not args.headless:
+        print(f"\n--- 阶段3: 生成缩略图 ---")
     thumbnailed = generate_batch(downloaded, category_name)
-    print(f"  缩略图成功: {len(thumbnailed)}/{len(downloaded)}")
+    result["downloaded"] = len(thumbnailed)
 
+    if not args.headless:
+        print(f"  缩略图成功: {len(thumbnailed)}/{len(downloaded)}")
     if not thumbnailed:
-        return
+        return result
 
-    # --- 阶段4-5: 上传 + 导入（本地模式跳过）---
+    # --- 本地模式 ---
     if args.local:
-        from config import get_originals_dir, get_thumbnails_dir
-        print(f"\n--- 本地模式: 跳过上传和导入 ---")
-        print(f"  原图 {len(thumbnailed)} 张 → {get_originals_dir(category_name)}")
-        print(f"  缩略图 {len(thumbnailed)} 张 → {get_thumbnails_dir(category_name)}")
-        return
+        result["uploaded"] = 0
+        result["imported"] = 0
+        return result
 
-    print(f"\n--- 阶段4: 上传云存储 ---")
+    # --- 阶段4: 上传 ---
+    if not args.headless:
+        print(f"\n--- 阶段4: 上传云存储 ---")
     uploaded = upload_batch(thumbnailed, classify_id)
-    print(f"  上传成功: {len(uploaded)}/{len(thumbnailed)}")
+    result["uploaded"] = len(uploaded)
 
+    if not args.headless:
+        print(f"  上传成功: {len(uploaded)}/{len(thumbnailed)}")
     if not uploaded:
-        return
+        return result
 
-    # --- 阶段5: 批量导入数据库 ---
-    print(f"\n--- 阶段5: 批量导入数据库 ---")
+    # --- 阶段5: 导入 ---
+    if not args.headless:
+        print(f"\n--- 阶段5: 批量导入数据库 ---")
     inserted = batch_import(uploaded, classify_id, category_name)
-    print(f"  导入完成: {inserted} 条")
+    result["imported"] = inserted
+
+    if not args.headless:
+        print(f"  导入完成: {inserted} 条")
+
+    return result
 
 
 def main():
@@ -203,8 +224,22 @@ def main():
                         help="列出所有可用分类")
     parser.add_argument("--list-sources", action="store_true",
                         help="列出所有可用数据源")
+    parser.add_argument("--headless", action="store_true",
+                        help="无交互模式：静默运行，输出 JSON 结果，错误写入日志文件")
+    parser.add_argument("--json", action="store_true",
+                        help="以 JSON 格式输出结果（供自动化调用）")
 
     args = parser.parse_args()
+
+    # 无交互模式：配置日志
+    if args.headless:
+        os.makedirs("logs", exist_ok=True)
+        log_file = f"logs/crawl_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+        logging.basicConfig(
+            filename=log_file, level=logging.INFO,
+            format='%(asctime)s [%(levelname)s] %(message)s'
+        )
+        logging.info(f"Headless crawl started: categories={args.categories}, num={args.num}, sources={args.sources}")
 
     if args.list_categories:
         print("可用分类:")
@@ -245,14 +280,24 @@ def main():
     print(f"╚══════════════════════════════════════════╝")
 
     start_time = datetime.now()
+    results = {"categories": {}, "total": {"collected": 0, "downloaded": 0, "uploaded": 0, "imported": 0, "skipped": 0}}
 
     for category_name, config in categories.items():
-        process_category(category_name, config, args)
+        result = process_category(category_name, config, args)
+        if result:
+            results["categories"][category_name] = result
+            for k in ["collected", "downloaded", "uploaded", "imported", "skipped"]:
+                results["total"][k] += result.get(k, 0)
 
     elapsed = datetime.now() - start_time
-    print(f"\n\n{'=' * 50}")
-    print(f"  采集完成！总耗时: {elapsed}")
-    print(f"{'=' * 50}")
+    results["elapsed"] = str(elapsed)
+
+    if args.headless or args.json:
+        print(json.dumps(results, ensure_ascii=False, indent=2))
+    else:
+        print(f"\n\n{'=' * 50}")
+        print(f"  采集完成！总耗时: {elapsed}")
+        print(f"{'=' * 50}")
 
 
 if __name__ == "__main__":

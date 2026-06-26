@@ -148,6 +148,18 @@ module.exports = {
 		const urlResult = await uniCloud.getTempFileURL({ fileList: [result.fileID] })
 		return { errCode: 0, data: { fileID: result.fileID, cloudURL: urlResult.fileList[0].tempFileURL || result.fileID } }
 	},
+	/**
+	 * 检查壁纸 URL 是否已存在（去重用）
+	 * @param {Object} data  { picurl }
+	 * @returns {Object}  { exists: bool }
+	 */
+	async adminCheckWallExists(data = {}) {
+		data = mergeData.call(this, data)
+		if (!data.picurl) return { errCode: 400, errMsg: '缺少picurl' }
+		const result = await db.collection('wallpaper-list').where({ picurl: data.picurl }).count()
+		return { errCode: 0, data: { exists: result.total > 0 } }
+	},
+
 	async adminBatchImport(data = {}) {
 		data = mergeData.call(this, data)
 		if (!data.walls || !data.walls.length) return { errCode: 400, errMsg: 'walls 数组为空' }
