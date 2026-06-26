@@ -12,10 +12,10 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一~三 ✅ → 阶段四（后台管理）待开始 |
-| **已完成** | uni-id配置+Schema迁移+模块化拆分+收藏/评论/推荐/投稿/搜索API |
-| **下一步** | 阶段四：创建 uni-admin 后台管理项目 |
-| **架构** | 10模块文件 + 10张Schema + 51个云对象方法 |
+| **当前阶段** | 阶段一~四 ✅ → 阶段五（运营能力）待开始 |
+| **已完成** | uni-id+Schema迁移+模块化拆分+互动API+admin后台+去重方法 |
+| **下一步** | 阶段五：定时触发器 + uni-push 推送方法 |
+| **架构** | 11模块文件 + 10张Schema + 62个云对象方法 |
 
 ## 目录结构
 

@@ -164,31 +164,33 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 > 版本 2.0.0 | 更新于 2026-06-26
 
-### 整体状态：🚀 阶段一~三完成，阶段四~五待开始
+### 整体状态：🚀 主体开发完成，测试和运营增强待做
 
 | 根阶段 | 内容 | wallpaper/ | uniCloudWallPaper/ | crawler/ |
 |--------|------|:---:|:---:|:---:|
 | **阶段一** | 用户体系 | ✅ 阶段一 完成 | ✅ 阶段一 完成 | — |
-| **阶段二** | 功能增强/架构重构 | ✅ 阶段二+三 完成 | ✅ 阶段二+三 完成 | ⬜ 阶段一 0.5天 |
-| **阶段三** | 后台管理 | — | ⬜ 阶段四 3天 | — |
-| **阶段四** | 运营能力 | ✅ 阶段四 完成 | ⬜ 阶段五 2天 | ⬜ 阶段二+三 1天 |
+| **阶段二** | 功能增强/架构重构 | ✅ 阶段二+三 完成 | ✅ 阶段二+三 完成 | ✅ 阶段一 完成 |
+| **阶段三** | 后台管理 | — | ✅ 阶段四 完成 | ✅ 阶段二 完成 |
+| **阶段四** | 运营能力 | ✅ 阶段四 完成 | ⬜ 阶段五 2天 | ✅ 阶段三 完成 |
 | **阶段五** | 测试发布 | ⬜ 阶段五 1天 | ⬜ 阶段六 1天 | — |
 
 ### 各板块进度
 
 | 板块 | 当前阶段 | 状态 | 下一步任务 |
 |------|---------|------|-----------|
-| **wallpaper/** | 阶段一~四 ✅ → 阶段五 | 登录+互动+投稿+推送已接入 | 测试与性能优化 |
-| **uniCloudWallPaper/** | 阶段一~三 ✅ → 阶段四 | uni-id+模块化+互动API已就绪 | uni-admin 后台管理项目创建 |
-| **crawler/** | 待命 | 4源5阶段 | wallpaper 阶段五 / uniCloudWallPaper 阶段四后再开工 |
-| **admin/** | — | ❌ 不存在 | uniCloudWallPaper 阶段四时创建 |
+| **wallpaper/** | 阶段一~四 ✅ → 阶段五 | 登录+互动+投稿+推送已接入 | 测试与性能优化（需 HBuilderX 运行） |
+| **uniCloudWallPaper/** | 阶段一~四 ✅ → 阶段五 | uni-id+模块化+互动API+admin已就绪 | 定时触发器 + 推送方法（2天） |
+| **crawler/** | ✅ 全部完成 | 去重+headless+健康检查+智能采集 | 配合后端阶段五对接定时触发器 |
+| **admin/** | ✅ 完成 | 7 个管理页面 | 配合后端阶段五，部署后即可使用 |
 
-### 阶段一~四交付清单
+### 交付清单
 
 | 板块 | 交付内容 |
 |------|---------|
-| **uniCloudWallPaper/** | uni-id 配置、Schema uid/favoriteCount 字段、_before 双写、OR 查询兼容、migrateDeviceToUid 迁移脚本、Schema 权限升级、userLogin/getUserProfile/checkToken 方法、模块化拆分（10文件）、新增4表Schema、收藏/评论/推荐/投稿/搜索5个功能模块13个方法 |
-| **wallpaper/** | pages/login/login.vue 登录页、utils/auth.js Token 管理、App.vue 全局登录态+推送监听、pages/user/user.vue 用户中心改造（头像/收藏入口/退出登录）、API/apis.js 14个新方法、preview.vue 评分/下载未登录引导+收藏按钮+评论面板、pages/upload/upload.vue 投稿页、搜索页云端API改造 |
+| **uniCloudWallPaper/** | uni-id 配置、Schema 迁移、_before 双写、OR 查询兼容、迁移脚本、登录方法、模块化拆分（10模块）、10张Schema、收藏/评论/推荐/投稿/搜索 13 方法、admin-stats 10 方法、adminCheckWallExists 去重方法 |
+| **wallpaper/** | 登录页、Token 管理、全局登录态+推送监听、用户中心改造、API 层 26 方法、预览页收藏按钮+评论面板、投稿页、搜索页云端 API、/frontend-design 重设计 |
+| **crawler/** | API Key 配置化、云端去重、headless 无交互模式、JSON 输出、健康检查、目标数量智能策略 |
+| **admin/** | 仪表盘（4色统计卡+6快捷入口）、壁纸管理（状态Tab+审核+分页）、分类/轮播图/公告/评论管理、投稿审核（通过自动发布） |
 
 ### 文档状态
 

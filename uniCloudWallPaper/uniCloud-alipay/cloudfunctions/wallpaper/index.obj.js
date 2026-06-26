@@ -3,7 +3,7 @@
 //
 // 模块结构：
 //   common.js              — 公共工具（db, dbCmd, uniIdCommon, mergeData, 分页）
-//   wallpaper-core.js      — 壁纸/轮播图/分类/公告/搜索/评分/下载（12 方法）
+//   wallpaper-core.js      — 壁纸/轮播图/分类/公告/搜索/评分/下载（10 方法）
 //   wallpaper-user.js      — 用户统计/历史/登录/迁移
 //   wallpaper-favorite.js  — 收藏（add/remove/toggle/isFavorited）        [v2.0 NEW]
 //   wallpaper-comment.js   — 评论（add/get/delete）                       [v2.0 NEW]
@@ -29,7 +29,7 @@ module.exports = {
 		this.deviceId = clientInfo.deviceId || 'anonymous'
 	},
 
-	// ---- 壁纸核心（12 个用户端方法） ----
+	// ---- 壁纸核心（10 个用户端方法） ----
 	getBanner:      wallpaperCore.getBanner,
 	getRandomWall:  wallpaperCore.getRandomWall,
 	getClassify:    wallpaperCore.getClassify,

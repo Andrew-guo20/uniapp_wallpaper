@@ -805,4 +805,3 @@ onShareTimeline(()=>{
 	}
 }
 </style>
-</style>
