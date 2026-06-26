@@ -150,6 +150,11 @@ module.exports = {
 		const keyword = (data.keyword || '').trim()
 		if (!keyword) return { errCode: 0, data: [] }
 
+		// 记录搜索词（异步，不阻塞返回）
+		db.collection('wallpaper-search-history').add({
+			keyword, deviceId: this.deviceId, uid: this.uid || '', create_time: Date.now()
+		}).catch(() => {}) // 静默失败
+
 		const classifyResult = await db.collection('wallpaper-classify').get()
 		const classifyMap = {}
 		classifyResult.data.forEach(c => { classifyMap[c._id] = c.name })

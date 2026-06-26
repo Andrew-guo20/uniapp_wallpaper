@@ -78,3 +78,50 @@ export function apiGetUserProfile() {
 export function apiCheckToken(token) {
   return wallpaperObj.checkToken({ token })
 }
+
+// ============================================================
+//  v2.0 新增：互动功能
+// ============================================================
+
+// ---- 收藏 ----
+export function apiToggleFavorite(wallId) {
+  return wallpaperObj.toggleFavorite({ wallId })
+}
+export function apiIsFavorited(wallIds) {
+  return wallpaperObj.isFavorited({ wallIds })
+}
+
+// ---- 评论 ----
+export function apiAddComment(wallId, content) {
+  return wallpaperObj.addComment({ wallId, content })
+}
+export function apiGetComments(wallId, pageNum = 1, pageSize = 10) {
+  return wallpaperObj.getComments({ wallId, pageNum, pageSize })
+}
+export function apiDeleteComment(commentId) {
+  return wallpaperObj.deleteComment({ commentId })
+}
+
+// ---- 推荐 ----
+export function apiGetRecommendWalls() {
+  return wallpaperObj.getRecommendWalls()
+}
+
+// ---- 投稿 ----
+export function apiSubmitUpload(data) {
+  return wallpaperObj.submitUpload(data)
+}
+export function apiGetMyUploads(pageNum = 1, pageSize = 10) {
+  return wallpaperObj.getMyUploads({ pageNum, pageSize })
+}
+
+// ---- 搜索增强 ----
+export function apiGetHotSearchKeywords() {
+  return wallpaperObj.getHotSearchKeywords()
+}
+export function apiGetSearchHistory() {
+  return wallpaperObj.getSearchHistory()
+}
+export function apiClearSearchHistory() {
+  return wallpaperObj.clearSearchHistory()
+}

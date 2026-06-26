@@ -88,7 +88,7 @@
 <script setup>
 import { ref } from 'vue'
 import {onShareAppMessage,onShareTimeline} from '@dcloudio/uni-app'
-import { apiGetBanner, apiGetDayRandom,apiGetNotice,apiGetClassify } from '@/API/apis.js'
+import { apiGetBanner, apiGetDayRandom,apiGetNotice,apiGetClassify,apiGetRecommendWalls } from '@/API/apis.js'
 import commonTitle from '@/components/common-title/common-title.vue'
 import themeItem from '@/components/theme-item/theme-item.vue'
 
@@ -103,7 +103,7 @@ const getBanner = async () => {
 // 每日推荐
 const dayRandomList = ref([])
 const getDayRandom = async () => {
-	let res = await apiGetDayRandom()
+	let res = await apiGetRecommendWalls(); if (!res.data || !res.data.length) res = await apiGetDayRandom()
 	dayRandomList.value = res.data
 	console.log('每日推荐',dayRandomList.value)
 }

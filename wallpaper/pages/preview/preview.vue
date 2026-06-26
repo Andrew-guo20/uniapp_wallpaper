@@ -119,6 +119,38 @@
 			</view>
 		</uni-popup>
 	</view>
+
+	<!-- 评论弹窗 -->
+	<uni-popup ref="commentPopup" type="bottom">
+		<view class="commentPopup">
+			<view class="popHeader">
+				<view></view>
+				<view class="title">评论 ({{commentTotal}})</view>
+				<view class="close" @click="commentPopup.close()">
+					<uni-icons type="closeempty" size="18"></uni-icons>
+				</view>
+			</view>
+			<scroll-view scroll-y class="commentList" v-if="comments.length">
+				<view class="commentItem" v-for="item in comments" :key="item._id">
+					<view class="commentMeta">
+						<text class="commentUid">{{item.uid?.substring(0,8) || '用户'}}</text>
+						<text class="commentTime">{{item.create_time}}</text>
+					</view>
+					<view class="commentContent">{{item.content}}</view>
+				</view>
+				<view class="loadMore" v-if="comments.length < commentTotal" @click="loadMoreComments">
+					<text>加载更多</text>
+				</view>
+			</scroll-view>
+			<view class="commentEmpty" v-else>
+				<text>暂无评论，快来抢沙发吧~</text>
+			</view>
+			<view class="commentInput">
+				<input v-model="commentText" placeholder="说点什么..." :disabled="commentLoading" confirm-type="send" @confirm="submitComment" />
+				<view class="sendBtn" @click="submitComment">发送</view>
+			</view>
+		</view>
+	</uni-popup>
 </template>
 
 <script setup>
@@ -126,7 +158,7 @@
 	import { onLoad,onShareAppMessage,onShareTimeline } from '@dcloudio/uni-app'
 	import { getStatusBarHeight } from '@/utils/system.js'
 	import uniRate from '@/uni_modules/uni-rate/components/uni-rate/uni-rate.vue'
-	import { apiGetsetupScore,apiWriteDownload,apiDetailWall } from '@/API/apis.js'
+	import { apiGetsetupScore,apiWriteDownload,apiDetailWall,apiToggleFavorite,apiIsFavorited,apiAddComment,apiGetComments,apiDeleteComment } from '@/API/apis.js'
 	import { goToHome } from '@/utils/common.js'
 	import { isLoggedIn } from '@/utils/auth.js'
 
@@ -147,6 +179,13 @@
 	const userScore = ref(0)
 	// 是否评分
 	const isScore = ref(false)
+	const isFavorited = ref(false)
+	const commentPopup = ref(null)
+	const comments = ref([])
+	const commentText = ref('')
+	const commentLoading = ref(false)
+	const commentTotal = ref(0)
+	const commentPage = ref(1)
 	// 评分弹窗
 	const clickScore = () => {
 		if(currentInfo.value.userScore){
@@ -160,6 +199,12 @@
 		scorePopup.value.close()
 		userScore.value = 0
 		isScore.value = false
+		isFavorited.value = false
+		// 查询收藏状态
+		if (isLoggedIn()) {
+			const favRes = await apiIsFavorited([item._id])
+			isFavorited.value = !!favRes.data[item._id]
+		}
 	}
 
 	// 确认评分
@@ -198,6 +243,59 @@
 			clickScoreClose()
 		}
 		console.log("当前信息", res)
+	}
+
+	// 点击收藏
+	const clickFavorite = async () => {
+		if (!isLoggedIn()) {
+			uni.showToast({ title: '请先登录', icon: 'none' })
+			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			return
+		}
+		try {
+			const res = await apiToggleFavorite(currentInfo.value._id)
+			if (res.errCode === 0) isFavorited.value = res.data.favorited
+		} catch (e) { console.error(e) }
+	}
+
+	// 点击评论
+	const clickComments = async () => {
+		commentPage.value = 1
+		await loadComments()
+		commentPopup.value.open()
+	}
+	const loadComments = async () => {
+		commentLoading.value = true
+		try {
+			const res = await apiGetComments(currentInfo.value._id, commentPage.value, 10)
+			if (res.errCode === 0) {
+				if (commentPage.value === 1) comments.value = res.data.list
+				else comments.value = [...comments.value, ...res.data.list]
+				commentTotal.value = res.data.total
+			}
+		} catch (e) { console.error(e) }
+		commentLoading.value = false
+	}
+	const loadMoreComments = () => {
+		commentPage.value++
+		loadComments()
+	}
+	const submitComment = async () => {
+		if (!commentText.value.trim()) return
+		if (!isLoggedIn()) {
+			uni.showToast({ title: '请先登录', icon: 'none' })
+			return
+		}
+		commentLoading.value = true
+		try {
+			const res = await apiAddComment(currentInfo.value._id, commentText.value.trim())
+			if (res.errCode === 0) {
+				commentText.value = ''
+				commentPage.value = 1
+				await loadComments()
+			}
+		} catch (e) { console.error(e) }
+		commentLoading.value = false
 	}
 
 	// 点击下载
@@ -592,4 +690,34 @@ onShareTimeline(()=>{
 			}
 		}
 }
+
+.commentPopup{
+	background: #fff;
+	border-radius: 24rpx 24rpx 0 0;
+	padding-bottom: env(safe-area-inset-bottom);
+	.commentList{
+		max-height: 500rpx;
+		padding: 0 30rpx;
+		.commentItem{
+			padding: 20rpx 0;
+			border-bottom: 1rpx solid #f5f5f5;
+			.commentMeta{
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 8rpx;
+				.commentUid{ font-size: 24rpx; color: #999; }
+				.commentTime{ font-size: 22rpx; color: #ccc; }
+			}
+			.commentContent{ font-size: 28rpx; color: #333; line-height: 1.5; }
+		}
+		.loadMore{ text-align: center; padding: 20rpx; color: $brand-theme-color; font-size: 24rpx; }
+	}
+	.commentEmpty{ text-align: center; padding: 60rpx 0; color: #ccc; font-size: 26rpx; }
+	.commentInput{
+		display: flex; align-items: center; padding: 16rpx 30rpx; border-top: 1rpx solid #f0f0f0;
+		input{ flex: 1; height: 64rpx; background: #f5f5f5; border-radius: 32rpx; padding: 0 24rpx; font-size: 26rpx; }
+		.sendBtn{ margin-left: 16rpx; padding: 12rpx 28rpx; background: $brand-theme-color; color: #fff; border-radius: 32rpx; font-size: 26rpx; }
+	}
+}
+</style>
 </style>
