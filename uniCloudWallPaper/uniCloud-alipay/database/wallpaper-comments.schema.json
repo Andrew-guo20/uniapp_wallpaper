@@ -1,0 +1,23 @@
+// 用户评论表
+{
+	"bsonType": "object",
+	"required": ["wallId", "uid", "content"],
+	"permission": {
+		"read": true,
+		"create": "auth.uid != null",
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": { "description": "系统自动生成" },
+		"wallId": { "bsonType": "string", "description": "壁纸ID" },
+		"uid": { "bsonType": "string", "description": "评论用户uid" },
+		"content": { "bsonType": "string", "description": "评论内容", "maxLength": 500 },
+		"status": { "bsonType": "int", "description": "0=待审核 1=已通过 2=已拒绝", "enum": [0, 1, 2] },
+		"create_time": { "bsonType": "timestamp", "description": "评论时间" }
+	},
+	"index": [
+		{ "name": "idx_wall_status", "fieldList": { "wallId": 1, "status": 1, "create_time": -1 } },
+		{ "name": "idx_uid_time", "fieldList": { "uid": 1, "create_time": -1 } }
+	]
+}

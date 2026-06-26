@@ -1,0 +1,27 @@
+// 用户投稿表
+{
+	"bsonType": "object",
+	"required": ["uid", "picurl", "classid", "status"],
+	"permission": {
+		"read": true,
+		"create": "auth.uid != null",
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": { "description": "系统自动生成" },
+		"uid": { "bsonType": "string", "description": "投稿用户uid" },
+		"picurl": { "bsonType": "string", "description": "原图云存储URL" },
+		"smallPicurl": { "bsonType": "string", "description": "缩略图URL" },
+		"classid": { "bsonType": "string", "description": "分类ID" },
+		"description": { "bsonType": "string", "description": "壁纸描述" },
+		"tabs": { "bsonType": "array", "description": "标签", "arrayType": "string" },
+		"status": { "bsonType": "int", "description": "0=待审核 1=已通过 2=已拒绝", "enum": [0, 1, 2] },
+		"review_msg": { "bsonType": "string", "description": "审核反馈" },
+		"create_time": { "bsonType": "timestamp", "description": "投稿时间" }
+	},
+	"index": [
+		{ "name": "idx_status_time", "fieldList": { "status": 1, "create_time": -1 } },
+		{ "name": "idx_uid_time", "fieldList": { "uid": 1, "create_time": -1 } }
+	]
+}
