@@ -196,13 +196,11 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 | 项目 | 状态 | 说明 |
 |------|:---:|------|
-| 云对象 | ⚠️ 待部署 | `package.json` 已修复（extensions 改为数组格式），HBuilderX 中重新上传 |
-| 数据库 Schema | ⬜ 待部署 | 10 个 Schema 需在 HBuilderX 中右键上传 |
-| uni-id 公共模块 | ⬜ 待部署 | uni-config-center + uni-id-common 需上传 |
-| 前端 wallpaper/ | ⬜ 待运行 | 关联服务空间后编译到微信开发者工具 |
+| 云对象 | ✅ 已部署 | 单文件合并版 index.obj.js（1019行，62方法） |
+| 数据库 Schema | ✅ 已部署 | 10 个 Schema |
+| uni-id 公共模块 | ✅ 已部署 | uni-config-center + uni-id-common |
+| 前端 wallpaper/ | ✅ 已测试 | 首页/登录/收藏/评论/用户中心全链路通过 |
 | 后台 admin/ | ⬜ 待运行 | 运行到浏览器 H5 |
-
-**部署顺序：** 公共模块 → Schema → 云对象 → 前端运行
 
 ### 文档状态
 
