@@ -1,5 +1,5 @@
-const SYSTEM_INFO = uni.getSystemInfoSync()
-export const getStatusBarHeight = () => SYSTEM_INFO.statusBarHeight || 15
+const WINDOW_INFO = uni.getWindowInfo ? uni.getWindowInfo() : uni.getSystemInfoSync()
+export const getStatusBarHeight = () => WINDOW_INFO.statusBarHeight || 15
 
 export const getTitleBarHeight = () => {
 	// 微信小程序等平台右上角有【胶囊】按钮，需要计算胶囊按钮的高度

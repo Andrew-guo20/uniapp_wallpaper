@@ -61,17 +61,17 @@
 					<view class="content">
 						<view class="row" >
 								<view class="label">壁纸ID:</view>
-								<text selectable class="value">{{currentInfo._id}}</text>
+								<text user-select class="value">{{currentInfo._id}}</text>
 						</view>
 
 						<!-- <view class="row" >
 								<view class="label">分类:</view>
-								<text selectable class="value class">213123123412</text>
+								<text user-select class="value class">213123123412</text>
 						</view> -->
 						
 						<view class="row" >
 								<view class="label">发布者:</view>
-								<text selectable class="value">{{currentInfo.nickname}}</text>
+								<text user-select class="value">{{currentInfo.nickname}}</text>
 						</view>
 
 						<view class="row" >
@@ -84,7 +84,7 @@
 
 						<view class="row" >
 								<view class="label">摘要:</view>
-								<text selectable class="value">{{currentInfo.description}}</text>
+								<text user-select class="value">{{currentInfo.description}}</text>
 						</view>
 
 						<view class="row" >
