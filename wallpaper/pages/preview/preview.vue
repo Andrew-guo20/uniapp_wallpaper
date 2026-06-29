@@ -209,12 +209,6 @@
 		scorePopup.value.close()
 		userScore.value = 0
 		isScore.value = false
-		isFavorited.value = false
-		// 查询收藏状态
-		if (isLoggedIn()) {
-			const favRes = await apiIsFavorited([item._id])
-			isFavorited.value = !!favRes.data[item._id]
-		}
 	}
 
 	// 确认评分
@@ -465,10 +459,18 @@
 	})
 
 	// 切换图片时 更新索引
-	const changeSwiper = (e) => {
+	const changeSwiper = async (e) => {
 		currentIndex.value = e.detail.current
 		currentInfo.value = classList.value[currentIndex.value]
 		readImgsFun()
+		// 查询当前壁纸的收藏状态
+		isFavorited.value = false
+		if (isLoggedIn()) {
+			try {
+				const favRes = await apiIsFavorited([currentInfo.value._id])
+				isFavorited.value = !!favRes.data[currentInfo.value._id]
+			} catch (e) {}
+		}
 	}
 
 	// 分享给好友

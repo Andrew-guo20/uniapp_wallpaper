@@ -1,0 +1,36 @@
+// 分类
+{
+	"bsonType": "object",
+	"required": ["name", "picurl"],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "分类ID"
+		},
+		"name": {
+			"bsonType": "string",
+			"description": "分类名称"
+		},
+		"picurl": {
+			"bsonType": "string",
+			"description": "分类封面图云存储URL"
+		},
+		"updateTime": {
+			"bsonType": "timestamp",
+			"description": "最后更新时间（展示'X天前更新'）"
+		},
+		"sort": {
+			"bsonType": "int",
+			"description": "排序（升序）"
+		},
+		"select": {
+			"bsonType": "bool",
+			"description": "是否在首页专题精选展示"
+		}
+	}
+}
