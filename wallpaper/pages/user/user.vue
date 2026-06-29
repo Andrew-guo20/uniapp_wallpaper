@@ -139,7 +139,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { onShow, onLoad, onUnload } from '@dcloudio/uni-app'
 import { getNavbarHeight } from '@/utils/system.js'
 import { apiUserInfo } from '@/API/apis.js'
 import { isLoggedIn, getUserInfo, logout } from '@/utils/auth.js'
@@ -149,12 +150,33 @@ const loginUser = ref(getUserInfo())
 
 const userInfo = ref(null)
 
-const getUserData = async () => {
-	const res = await apiUserInfo()
-	userInfo.value = res.data
+const refreshLoginState = () => {
+	isLogin.value = isLoggedIn()
+	loginUser.value = getUserInfo()
 }
 
-getUserData()
+const getUserData = async () => {
+	refreshLoginState()
+	try {
+		const res = await apiUserInfo()
+		userInfo.value = res.data || { downloadSize: 0, scoreSize: 0, favoriteSize: 0 }
+	} catch (e) {
+		console.error('getUserData error:', e)
+		userInfo.value = { downloadSize: 0, scoreSize: 0, favoriteSize: 0 }
+	}
+}
+
+onLoad(() => {
+	uni.$on('loginStateChanged', getUserData)
+})
+
+onShow(() => {
+	getUserData()
+})
+
+onUnload(() => {
+	uni.$off('loginStateChanged', getUserData)
+})
 
 // 点击头像
 const handleAvatarClick = () => {

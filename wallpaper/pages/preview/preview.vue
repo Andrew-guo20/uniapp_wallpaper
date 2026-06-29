@@ -108,7 +108,7 @@
 			<view class="scorePopup">
 				<view class="popHeader">
 					<view></view>
-					<view class="title">{{isScore ? '评分过了~' : '壁纸评分'}}</view>
+					<view class="title">{{isScore ? '我的评分' : '壁纸评分'}}</view>
 					<view class="close" @click="clickScoreClose">
 						<uni-icons type="closeempty" size="18"></uni-icons>
 					</view>
@@ -117,14 +117,14 @@
 				<view class="content">
 					<uni-rate v-model="userScore" 
 						allowHalf 
-						:disabled="isScore"
+						active-color="#FFCA3E"
 						disabled-color="#FFCA3E"
 					/>
 					<text class="text">{{userScore}}分</text>
 				</view>
 
 				<view class="footer">
-					<button :disabled="!userScore || isScore" @click="submitScore"  type="default" size="mini" plain>确认评分</button>
+					<button :disabled="!userScore" @click="submitScore"  type="default" size="mini" plain>{{isScore ? '更新评分' : '确认评分'}}</button>
 				</view>
 			</view>
 		</uni-popup>
@@ -196,12 +196,23 @@
 	const commentLoading = ref(false)
 	const commentTotal = ref(0)
 	const commentPage = ref(1)
+	const goLogin = () => {
+		const redirect = '/pages/preview/preview?id=' + currentInfo.value._id + '&type=share'
+		uni.navigateTo({ url: '/pages/login/login?redirect=' + encodeURIComponent(redirect) })
+	}
+	const setCurrentInfo = (item) => {
+		if (!item) {
+			goToHome()
+			return
+		}
+		currentInfo.value = item
+		userScore.value = item.userScore || 0
+		isScore.value = !!item.userScore
+	}
 	// 评分弹窗
 	const clickScore = () => {
-		if(currentInfo.value.userScore){
-			isScore.value = true
-			userScore.value = currentInfo.value.userScore
-		}
+		userScore.value = currentInfo.value.userScore || 0
+		isScore.value = !!currentInfo.value.userScore
 		scorePopup.value.open()
 	}
 
@@ -218,7 +229,7 @@
 			scorePopup.value.close()
 			userScore.value = 0
 			isScore.value = false
-			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			setTimeout(goLogin, 500)
 			return
 		}
 		uni.showLoading({
@@ -232,12 +243,14 @@
 		})
 		uni.hideLoading()
 		if(res.errCode === 0){
+			const hadScore = !!currentInfo.value.userScore
 			uni.showToast({
-				title: '评分成功',
+				title: hadScore ? '更新成功' : '评分成功',
 				icon: 'none'
 			})
 				currentInfo.value.score = res.data.score
 				currentInfo.value.scoreCount = res.data.scoreCount
+				currentInfo.value.userScore = userScore.value
 				classList.value[currentIndex.value].userScore = userScore.value
 				classList.value[currentIndex.value].score = res.data.score
 				classList.value[currentIndex.value].scoreCount = res.data.scoreCount
@@ -245,6 +258,12 @@
 
 			// 关闭弹窗
 			clickScoreClose()
+		} else if (res.errCode === 401) {
+			uni.showToast({ title: '请先登录', icon: 'none' })
+			clickScoreClose()
+			setTimeout(goLogin, 500)
+		} else {
+			uni.showToast({ title: res.errMsg || 'score failed', icon: 'none' })
 		}
 		console.log("当前信息", res)
 	}
@@ -253,12 +272,13 @@
 	const clickFavorite = async () => {
 		if (!isLoggedIn()) {
 			uni.showToast({ title: '请先登录', icon: 'none' })
-			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			setTimeout(goLogin, 500)
 			return
 		}
 		try {
 			const res = await apiToggleFavorite(currentInfo.value._id)
 			if (res.errCode === 0) isFavorited.value = res.data.favorited
+			else uni.showToast({ title: res.errMsg || 'favorite failed', icon: 'none' })
 		} catch (e) { console.error(e) }
 	}
 
@@ -288,6 +308,7 @@
 		if (!commentText.value.trim()) return
 		if (!isLoggedIn()) {
 			uni.showToast({ title: '请先登录', icon: 'none' })
+			setTimeout(goLogin, 500)
 			return
 		}
 		commentLoading.value = true
@@ -297,6 +318,8 @@
 				commentText.value = ''
 				commentPage.value = 1
 				await loadComments()
+			} else {
+				uni.showToast({ title: res.errMsg || 'comment failed', icon: 'none' })
 			}
 		} catch (e) { console.error(e) }
 		commentLoading.value = false
@@ -307,7 +330,7 @@
 		// #ifndef H5
 		if (!isLoggedIn()) {
 			uni.showToast({ title: '请先登录', icon: 'none' })
-			setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+			setTimeout(goLogin, 500)
 			return
 		}
 		// #endif
@@ -427,21 +450,30 @@
 	onLoad(async (e)=>{
 		if(!e.id) goToHome()
 		currentId.value = e.id
-		if(e.type == 'share'){
+		try {
 			let res = await apiDetailWall({
 				id:currentId.value
 			})
-			classList.value = res.data.map(item =>{
-				return {
-					...item,
-					picurl: item.picurl || item.smallPicurl.replace('_small.webp','.jpg')
+			if (res.errCode === 0 && res.data.length) {
+				const detail = {
+					...res.data[0],
+					picurl: res.data[0].picurl || res.data[0].smallPicurl.replace('_small.webp','.jpg')
 				}
-			})
+				if (e.type == 'share' || !classList.value.length) {
+					classList.value = [detail]
+				} else {
+					const index = classList.value.findIndex(item => item._id === currentId.value)
+					if (index >= 0) classList.value[index] = Object.assign({}, classList.value[index], detail)
+				}
+			}
+		} catch (err) {
+			console.error('get detail error:', err)
 		}
 		currentIndex.value = classList.value.findIndex(item => {
 			return item._id === currentId.value
 		})
-		currentInfo.value = classList.value[currentIndex.value]
+		if (currentIndex.value < 0) currentIndex.value = 0
+		setCurrentInfo(classList.value[currentIndex.value])
 		readImgsFun()
 	})
 
@@ -461,7 +493,7 @@
 	// 切换图片时 更新索引
 	const changeSwiper = async (e) => {
 		currentIndex.value = e.detail.current
-		currentInfo.value = classList.value[currentIndex.value]
+		setCurrentInfo(classList.value[currentIndex.value])
 		readImgsFun()
 		// 查询当前壁纸的收藏状态
 		isFavorited.value = false

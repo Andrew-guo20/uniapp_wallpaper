@@ -17,18 +17,16 @@
 			<!-- 登录按钮区 -->
 			<view class="login-action">
 				<!-- 微信登录按钮 -->
-				<button
+				<view
 					class="wechat-btn"
-					:loading="loading"
-					:disabled="loading"
+					:class="{ disabled: loading }"
 					@click="handleLogin"
 				>
 					<view class="btn-content" v-if="!loading">
-						<text class="wechat-icon-text">微</text>
 						<text>微信一键登录</text>
 					</view>
 					<text v-else>登录中...</text>
-				</button>
+				</view>
 
 				<!-- 登录提示 -->
 				<text class="login-tip">授权登录即表示同意 用户协议 和 隐私政策</text>
@@ -50,8 +48,12 @@ import { saveLogin } from '@/utils/auth.js'
 export default {
 	data() {
 		return {
-			loading: false
+			loading: false,
+			redirect: ''
 		}
+	},
+	onLoad(options = {}) {
+		this.redirect = options.redirect ? decodeURIComponent(options.redirect) : ''
 	},
 	methods: {
 		async handleLogin() {
@@ -83,12 +85,17 @@ export default {
 				const app = getApp()
 				app.globalData.isLogin = true
 				app.globalData.userInfo = userInfo
+				uni.$emit('loginStateChanged', userInfo)
 
 				uni.showToast({ title: '登录成功', icon: 'success' })
 
 				// 5. 延迟返回上一页
 				setTimeout(() => {
-					uni.navigateBack()
+					if (this.redirect) {
+						uni.redirectTo({ url: this.redirect })
+					} else {
+						uni.navigateBack()
+					}
 				}, 600)
 
 			} catch (e) {
@@ -187,7 +194,7 @@ export default {
 			box-shadow: 0 4rpx 16rpx rgba($brand-theme-color, 0.25);
 		}
 
-		&[disabled] {
+		&.disabled {
 			opacity: 0.85;
 		}
 

@@ -92,6 +92,7 @@ onUnload(()=>{
 		gap:5rpx;
 		padding: 5rpx;
 		.item{
+			position: relative;
 			height: 440rpx;
 			image{
 				display: block;

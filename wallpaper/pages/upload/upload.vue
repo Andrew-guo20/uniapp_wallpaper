@@ -90,6 +90,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { apiSubmitUpload, apiGetClassify } from '@/API/apis.js'
 import { isLoggedIn } from '@/utils/auth.js'
 
@@ -101,9 +102,17 @@ const tagsInput = ref('')
 const form = ref({ classid: '', description: '' })
 
 const canSubmit = computed(() => form.value.classid && tempFilePath.value)
+const loginUrl = '/pages/login/login?redirect=' + encodeURIComponent('/pages/upload/upload')
 
 apiGetClassify().then(res => {
 	if (res.errCode === 0) categories.value = res.data
+})
+
+onShow(() => {
+	if (!isLoggedIn()) {
+		uni.showToast({ title: 'please login first', icon: 'none' })
+		setTimeout(() => uni.redirectTo({ url: loginUrl }), 500)
+	}
 })
 
 const chooseImage = () => {
@@ -121,7 +130,7 @@ const chooseImage = () => {
 const handleSubmit = async () => {
 	if (!isLoggedIn()) {
 		uni.showToast({ title: '请先登录', icon: 'none' })
-		setTimeout(() => uni.navigateTo({ url: '/pages/login/login' }), 500)
+		setTimeout(() => uni.redirectTo({ url: loginUrl }), 500)
 		return
 	}
 	if (!canSubmit.value) return
@@ -139,14 +148,25 @@ const handleSubmit = async () => {
 			smallPicurl: tempFilePath.value
 		})
 		if (res.errCode === 0) {
-			uni.showToast({ title: '投稿成功，等待审核', icon: 'success' })
-			setTimeout(() => uni.navigateBack(), 1000)
+			previewUrl.value = ''
+			tempFilePath.value = ''
+			tagsInput.value = ''
+			form.value = { classid: '', description: '' }
+			uni.hideLoading()
+			uni.showModal({
+				title: '投稿成功',
+				content: '内容已提交，等待审核通过后发布。',
+				showCancel: false,
+				success: () => uni.navigateBack()
+			})
 		} else {
-			uni.showToast({ title: res.errMsg || '投稿失败', icon: 'none' })
+			uni.hideLoading()
+			uni.showToast({ title: res.errMsg || 'submit failed', icon: 'none' })
 		}
 	} catch (e) {
 		console.error(e)
-		uni.showToast({ title: '投稿失败，请重试', icon: 'none' })
+		uni.hideLoading()
+		uni.showToast({ title: 'submit failed, try again', icon: 'none' })
 	} finally {
 		submitting.value = false
 		uni.hideLoading()

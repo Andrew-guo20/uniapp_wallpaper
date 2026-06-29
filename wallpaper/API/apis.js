@@ -1,63 +1,76 @@
-const wallpaperObj = uniCloud.importObject('wallpaper')
+import { getToken } from '@/utils/auth.js'
+
+function getWallpaperObj() {
+  const wallpaperObj = uniCloud.importObject('wallpaper')
+  if (!wallpaperObj) {
+    throw new Error('uniCloud service space is not active. Re-link it in HBuilderX and run again.')
+  }
+  return wallpaperObj
+}
+
+function withToken(data = {}) {
+  const token = getToken()
+  return token ? Object.assign({}, data, { uniIdToken: token }) : data
+}
 
 // 首页轮播图
 export function apiGetBanner() {
-  return wallpaperObj.getBanner()
+  return getWallpaperObj().getBanner(withToken())
 }
 
 // 随机9张壁纸
 export function apiGetDayRandom() {
-  return wallpaperObj.getRandomWall()
+  return getWallpaperObj().getRandomWall(withToken())
 }
 
 // 壁纸分类
 export function apiGetClassify(data = {}) {
-  return wallpaperObj.getClassify(data)
+  return getWallpaperObj().getClassify(withToken(data))
 }
 
 // 分类下壁纸列表
 export function apiGetClassifyDetail(data = {}) {
-  return wallpaperObj.getWallList(data)
+  return getWallpaperObj().getWallList(withToken(data))
 }
 
 // 壁纸详情
 export function apiDetailWall(data = {}) {
-  return wallpaperObj.getDetailWall(data)
+  return getWallpaperObj().getDetailWall(withToken(data))
 }
 
 // 壁纸评分
 export function apiGetsetupScore(data = {}) {
-  return wallpaperObj.setupScore(data)
+  return getWallpaperObj().setupScore(withToken(data))
 }
 
 // 记录下载
 export function apiWriteDownload(data = {}) {
-  return wallpaperObj.downloadWall(data)
+  return getWallpaperObj().downloadWall(withToken(data))
 }
 
 // 用户信息
 export function apiUserInfo(data = {}) {
-  return wallpaperObj.getUserInfo(data)
+  return getWallpaperObj().getUserInfo(withToken(data))
 }
 
 // 用户下载/评分历史
 export function apiGetHistoryList(data = {}) {
-  return wallpaperObj.getUserWallList(data)
+  return getWallpaperObj().getUserWallList(withToken(data))
 }
 
 // 公告列表
 export function apiGetNotice(data = {}) {
-  return wallpaperObj.getNewsList(data)
+  return getWallpaperObj().getNewsList(withToken(data))
 }
 
 // 公告详情
 export function apiNoticeDetail(data = {}) {
-  return wallpaperObj.getNewsDetail(data)
+  return getWallpaperObj().getNewsDetail(withToken(data))
 }
 
 // 搜索壁纸
 export function apiSearchData(data = {}) {
-  return wallpaperObj.searchWall(data)
+  return getWallpaperObj().searchWall(withToken(data))
 }
 
 // ============================================================
@@ -66,17 +79,17 @@ export function apiSearchData(data = {}) {
 
 // 微信登录
 export function apiLogin(code) {
-  return wallpaperObj.userLogin({ code })
+  return getWallpaperObj().userLogin({ code })
 }
 
 // 获取当前用户微信信息（昵称、头像）
 export function apiGetUserProfile() {
-  return wallpaperObj.getUserProfile()
+  return getWallpaperObj().getUserProfile(withToken())
 }
 
 // 校验登录状态
 export function apiCheckToken(token) {
-  return wallpaperObj.checkToken({ token })
+  return getWallpaperObj().checkToken({ token })
 }
 
 // ============================================================
@@ -85,43 +98,43 @@ export function apiCheckToken(token) {
 
 // ---- 收藏 ----
 export function apiToggleFavorite(wallId) {
-  return wallpaperObj.toggleFavorite({ wallId })
+  return getWallpaperObj().toggleFavorite(withToken({ wallId }))
 }
 export function apiIsFavorited(wallIds) {
-  return wallpaperObj.isFavorited({ wallIds })
+  return getWallpaperObj().isFavorited(withToken({ wallIds }))
 }
 
 // ---- 评论 ----
 export function apiAddComment(wallId, content) {
-  return wallpaperObj.addComment({ wallId, content })
+  return getWallpaperObj().addComment(withToken({ wallId, content }))
 }
 export function apiGetComments(wallId, pageNum = 1, pageSize = 10) {
-  return wallpaperObj.getComments({ wallId, pageNum, pageSize })
+  return getWallpaperObj().getComments(withToken({ wallId, pageNum, pageSize }))
 }
 export function apiDeleteComment(commentId) {
-  return wallpaperObj.deleteComment({ commentId })
+  return getWallpaperObj().deleteComment(withToken({ commentId }))
 }
 
 // ---- 推荐 ----
 export function apiGetRecommendWalls() {
-  return wallpaperObj.getRecommendWalls()
+  return getWallpaperObj().getRecommendWalls(withToken())
 }
 
 // ---- 投稿 ----
 export function apiSubmitUpload(data) {
-  return wallpaperObj.submitUpload(data)
+  return getWallpaperObj().submitUpload(withToken(data))
 }
 export function apiGetMyUploads(pageNum = 1, pageSize = 10) {
-  return wallpaperObj.getMyUploads({ pageNum, pageSize })
+  return getWallpaperObj().getMyUploads(withToken({ pageNum, pageSize }))
 }
 
 // ---- 搜索增强 ----
 export function apiGetHotSearchKeywords() {
-  return wallpaperObj.getHotSearchKeywords()
+  return getWallpaperObj().getHotSearchKeywords(withToken())
 }
 export function apiGetSearchHistory() {
-  return wallpaperObj.getSearchHistory()
+  return getWallpaperObj().getSearchHistory(withToken())
 }
 export function apiClearSearchHistory() {
-  return wallpaperObj.clearSearchHistory()
+  return getWallpaperObj().clearSearchHistory(withToken())
 }

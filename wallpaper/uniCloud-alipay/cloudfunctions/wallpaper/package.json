@@ -1,7 +1,0 @@
-{
-  "name": "wallpaper",
-  "extensions": ["uni-cloud-jql"],
-  "cloudfunction-config": {
-    "timeout": 30
-  }
-}

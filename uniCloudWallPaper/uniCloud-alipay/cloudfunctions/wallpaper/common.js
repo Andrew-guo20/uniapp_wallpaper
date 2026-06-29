@@ -4,7 +4,8 @@
  */
 const db = uniCloud.database()
 const dbCmd = db.command
-const uniIdCommon = require('uni-id-common')
+let uniIdCommon = {}
+try { uniIdCommon = require('uni-id-common') } catch(e) {}
 
 /**
  * 合并 HTTP 请求参数

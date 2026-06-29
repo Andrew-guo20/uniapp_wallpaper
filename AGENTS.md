@@ -162,9 +162,9 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 ## 当前开发进度
 
-> 版本 2.0.0 | 更新于 2026-06-26
+> 版本 2.0.0 | 更新于 2026-06-29
 
-### 整体状态：🚀 主体开发完成，测试和运营增强待做
+### 整体状态：✅ 微信小程序真机回归通过，待发布准备
 
 | 根阶段 | 内容 | wallpaper/ | uniCloudWallPaper/ | crawler/ |
 |--------|------|:---:|:---:|:---:|
@@ -172,14 +172,14 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 | **阶段二** | 功能增强/架构重构 | ✅ 阶段二+三 完成 | ✅ 阶段二+三 完成 | ✅ 阶段一 完成 |
 | **阶段三** | 后台管理 | — | ✅ 阶段四 完成 | ✅ 阶段二 完成 |
 | **阶段四** | 运营能力 | ✅ 阶段四 完成 | ⬜ 阶段五 2天 | ✅ 阶段三 完成 |
-| **阶段五** | 测试发布 | ⬜ 阶段五 1天 | ⬜ 阶段六 1天 | — |
+| **阶段五** | 测试发布 | ✅ 真机回归通过 | ⬜ 阶段六发布准备 | — |
 
 ### 各板块进度
 
 | 板块 | 当前阶段 | 状态 | 下一步任务 |
 |------|---------|------|-----------|
-| **wallpaper/** | 阶段一~四 ✅ → 阶段五 | 登录+互动+投稿+推送已接入 | 测试与性能优化（需 HBuilderX 运行） |
-| **uniCloudWallPaper/** | 阶段一~四 ✅ → 阶段五 | uni-id+模块化+互动API+admin已就绪 | 定时触发器 + 推送方法（2天） |
+| **wallpaper/** | 阶段一~五 ✅ | 登录+互动+投稿+搜索+真机回归通过 | 发布前包体/隐私协议/体验版上传检查 |
+| **uniCloudWallPaper/** | 阶段一~四 ✅ → 阶段五/六 | uni-id+互动API+云对象真机验证通过，admin已就绪 | 生产发布前确认公共模块、Schema、云对象最终部署；定时触发器/推送后续增强 |
 | **crawler/** | ✅ 全部完成 | 去重+headless+健康检查+智能采集 | 配合后端阶段五对接定时触发器 |
 | **admin/** | ✅ 完成 | 7 个管理页面 | 配合后端阶段五，部署后即可使用 |
 
@@ -196,11 +196,11 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 | 项目 | 状态 | 说明 |
 |------|:---:|------|
-| 云对象 | ⚠️ 待部署 | `package.json` 已修复（extensions 改为数组格式），HBuilderX 中重新上传 |
-| 数据库 Schema | ⬜ 待部署 | 10 个 Schema 需在 HBuilderX 中右键上传 |
-| uni-id 公共模块 | ⬜ 待部署 | uni-config-center + uni-id-common 需上传 |
-| 前端 wallpaper/ | ⬜ 待运行 | 关联服务空间后编译到微信开发者工具 |
-| 后台 admin/ | ⬜ 待运行 | 运行到浏览器 H5 |
+| 云对象 | ✅ 真机验证通过 | 当前云端调试/真机回归通过；发布前需确认最终版本已上传 |
+| 数据库 Schema | ✅ 已用于真机测试 | 发布前复核 10 个 Schema 均为最新版本 |
+| uni-id 公共模块 | ✅ 真机登录验证通过 | 发布前复核 uni-config-center + uni-id-common 均为最新版本 |
+| 前端 wallpaper/ | ✅ 微信真机测试通过 | 下一步上传体验版/提交审核前检查 |
+| 后台 admin/ | ⬜ 待发布前复核 | 运行到浏览器 H5，配合后端管理功能复测 |
 
 **部署顺序：** 公共模块 → Schema → 云对象 → 前端运行
 

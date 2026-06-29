@@ -1,5 +1,5 @@
 <script>
-	import { getToken, isLoggedIn, logout, saveLogin } from '@/utils/auth.js'
+	import { getToken, getUserInfo, logout } from '@/utils/auth.js'
 	import { apiCheckToken } from '@/API/apis.js'
 
 	export default {
@@ -33,7 +33,6 @@
 					if (res.errCode === 0 && res.data && res.data.valid) {
 						this.globalData.isLogin = true
 						// 从缓存恢复用户信息
-						const { getUserInfo } = require('@/utils/auth.js')
 						this.globalData.userInfo = getUserInfo()
 					} else {
 						// token 失效，清除

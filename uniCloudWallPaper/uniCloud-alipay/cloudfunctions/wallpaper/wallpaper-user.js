@@ -2,6 +2,84 @@
  * 用户相关方法 — 用户统计 / 历史记录 / 登录 / 迁移
  */
 const { db, dbCmd, uniIdCommon, mergeData, parsePagination } = require('./common')
+let uniConfigCenter = null
+try { uniConfigCenter = require('uni-config-center') } catch(e) {}
+
+function getUniIdConfig(clientInfo = {}) {
+	if (!uniConfigCenter) return {}
+	const config = uniConfigCenter({ pluginId: 'uni-id' }).config()
+	if (!Array.isArray(config)) return config
+	return config.find(item => item.dcloudAppid === clientInfo.appId) ||
+		config.find(item => item.isDefaultConfig) ||
+		config[0] ||
+		{}
+}
+
+function getLoginErrorMessage(error) {
+	return error && (error.errMsg || error.message) || 'unknown error'
+}
+
+function normalizeClientInfo(clientInfo = {}) {
+	return Object.assign({}, clientInfo, {
+		appId: clientInfo.appId || clientInfo.APPID || 'wxedf7c9be266ef39c',
+		platform: clientInfo.platform || clientInfo.PLATFORM || 'mp-weixin',
+		locale: clientInfo.locale || clientInfo.LOCALE || 'zh-Hans',
+		clientIP: clientInfo.clientIP || clientInfo.CLIENTIP || '',
+		deviceId: clientInfo.deviceId || clientInfo.DEVICEID || 'anonymous'
+	})
+}
+
+async function code2Session(code, clientInfo = {}) {
+	clientInfo = normalizeClientInfo(clientInfo)
+	const config = getUniIdConfig(clientInfo)
+	const oauth = config['mp-weixin'] && config['mp-weixin'].oauth && config['mp-weixin'].oauth.weixin
+	if (!oauth || !oauth.appid || !oauth.appsecret || oauth.appsecret.includes('<')) {
+		return { errCode: 500, errMsg: '微信登录配置未完成' }
+	}
+
+	const result = await uniCloud.httpclient.request('https://api.weixin.qq.com/sns/jscode2session', {
+		method: 'GET',
+		dataType: 'json',
+		data: {
+			appid: oauth.appid,
+			secret: oauth.appsecret,
+			js_code: code,
+			grant_type: 'authorization_code'
+		}
+	})
+	const session = result.data || {}
+	if (session.errcode) return { errCode: session.errcode, errMsg: session.errmsg || '微信登录失败' }
+	if (!session.openid) return { errCode: 500, errMsg: '微信登录未返回openid' }
+	return { errCode: 0, data: session }
+}
+
+async function findOrCreateWeixinUser(openid, clientInfo = {}) {
+	const now = Date.now()
+	const users = db.collection('uni-id-users')
+	const where = { 'wx_openid.mp-weixin': openid }
+	const result = await users.where(where).limit(1).get()
+	if (result.data.length > 0) {
+		const user = result.data[0]
+		await users.doc(user._id).update({
+			last_login_date: now,
+			last_login_ip: clientInfo.clientIP || ''
+		})
+		return user
+	}
+
+	const addResult = await users.add({
+		wx_openid: { 'mp-weixin': openid },
+		nickname: '壁纸用户',
+		avatar: '',
+		status: 0,
+		token: [],
+		register_date: now,
+		register_ip: clientInfo.clientIP || '',
+		last_login_date: now,
+		last_login_ip: clientInfo.clientIP || ''
+	})
+	return { _id: addResult.id, nickname: '壁纸用户', avatar: '' }
+}
 
 module.exports = {
 
@@ -75,24 +153,45 @@ module.exports = {
 	//  登录
 	// ============================================================
 	async userLogin(data = {}) {
-		data = mergeData.call(this, data)
-		if (!data.code) return { errCode: 400, errMsg: '缺少登录凭证code' }
+		try {
+			data = mergeData.call(this, data)
+			if (!data.code) return { errCode: 400, errMsg: '缺少登录凭证code' }
 
-		const uniID = uniIdCommon.createInstance({ context: this.getUniCloudRequestContext() })
-		const loginResult = await uniID.loginByWeixin({ code: data.code })
-		if (loginResult.errCode !== 0) return loginResult
+			const clientInfo = normalizeClientInfo(this.getClientInfo())
+			const sessionResult = await code2Session(data.code, clientInfo)
+			if (sessionResult.errCode !== 0) return sessionResult
 
-		const clientInfo = this.getClientInfo()
-		this.uid = loginResult.uid
-		this.deviceId = clientInfo.deviceId || 'anonymous'
-		await this.migrateDeviceToUid()
-
-		return {
-			errCode: 0,
-			data: {
-				token: loginResult.token, tokenExpired: loginResult.tokenExpired,
-				uid: loginResult.uid, userInfo: loginResult.userInfo || {}
+			const user = await findOrCreateWeixinUser(sessionResult.data.openid, clientInfo)
+			if (!uniIdCommon || typeof uniIdCommon.createInstance !== 'function') {
+				return { errCode: 500, errMsg: 'uni-id-common 公共模块未上传或未生效' }
 			}
+			const uniID = uniIdCommon.createInstance({ clientInfo })
+			const loginResult = await uniID.createToken({ uid: user._id })
+			if (loginResult.errCode !== 0) return loginResult
+
+			this.uid = user._id
+			this.deviceId = clientInfo.deviceId || 'anonymous'
+			try {
+				await this.migrateDeviceToUid()
+			} catch (e) {
+				console.error('migrateDeviceToUid failed:', e)
+			}
+
+			return {
+				errCode: 0,
+				data: {
+					token: loginResult.token, tokenExpired: loginResult.tokenExpired,
+					uid: user._id,
+					userInfo: {
+						uid: user._id,
+						nickname: user.nickname || '壁纸用户',
+						avatar: user.avatar_file?.url || user.avatar || ''
+					}
+				}
+			}
+		} catch (e) {
+			console.error('userLogin failed:', e)
+			return { errCode: 500, errMsg: `登录失败：${getLoginErrorMessage(e)}` }
 		}
 	},
 
@@ -100,11 +199,10 @@ module.exports = {
 		data = mergeData.call(this, data)
 		if (!this.uid) return { errCode: 401, errMsg: '请先登录' }
 
-		const uniID = uniIdCommon.createInstance({ context: this.getUniCloudRequestContext() })
-		const result = await uniID.getUserInfoByUid({ uid: this.uid })
-		if (result.errCode !== 0) return result
+		const result = await db.collection('uni-id-users').doc(this.uid).get()
+		if (!result.data.length) return { errCode: 404, errMsg: '用户不存在' }
 
-		const user = result.userInfo || {}
+		const user = result.data[0] || {}
 		return {
 			errCode: 0,
 			data: { uid: this.uid, nickname: user.nickname || '', avatar: user.avatar_file?.url || user.avatar || '' }
@@ -115,7 +213,7 @@ module.exports = {
 		data = mergeData.call(this, data)
 		if (!data.token && !this.uid) return { errCode: 0, data: { valid: false } }
 
-		const uniID = uniIdCommon.createInstance({ context: this.getUniCloudRequestContext() })
+		const uniID = uniIdCommon.createInstance({ clientInfo: normalizeClientInfo(this.getClientInfo()) })
 		try {
 			const result = await uniID.checkToken(data.token || '')
 			return { errCode: 0, data: { valid: result.errCode === 0, uid: result.uid || '' } }
@@ -132,11 +230,11 @@ module.exports = {
 		if (!this.uid) return { errCode: 401, errMsg: '请先登录' }
 
 		const scoreResult = await db.collection('wallpaper-user-score')
-			.where({ deviceId: this.deviceId, uid: dbCmd.or([{ $eq: '' }, { $exists: false }]) })
+			.where({ deviceId: this.deviceId, uid: '' })
 			.update({ uid: this.uid })
 
 		const dlResult = await db.collection('wallpaper-download-record')
-			.where({ deviceId: this.deviceId, uid: dbCmd.or([{ $eq: '' }, { $exists: false }]) })
+			.where({ deviceId: this.deviceId, uid: '' })
 			.update({ uid: this.uid })
 
 		return {
