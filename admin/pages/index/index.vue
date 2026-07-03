@@ -75,6 +75,14 @@
 				<text class="menu-desc">置顶、发布</text>
 			</navigator>
 
+			<navigator url="/pages/user/list" class="menu-card">
+				<view class="menu-icon-wrap bg-indigo">
+					<text class="menu-icon">ID</text>
+				</view>
+				<text class="menu-label">用户管理</text>
+				<text class="menu-desc">活跃数据概览</text>
+			</navigator>
+
 			<navigator url="/pages/comment/list" class="menu-card">
 				<view class="menu-icon-wrap bg-purple">
 					<text class="menu-icon">💬</text>

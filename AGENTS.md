@@ -181,7 +181,7 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 | **wallpaper/** | 阶段一~五 ✅ | 登录+互动+投稿+搜索+真机回归通过 | 发布前包体/隐私协议/体验版上传检查 |
 | **uniCloudWallPaper/** | 阶段一~四 ✅ → 阶段五/六 | uni-id+互动API+云对象真机验证通过，admin已就绪 | 生产发布前确认公共模块、Schema、云对象最终部署；定时触发器/推送后续增强 |
 | **crawler/** | ✅ 全部完成 | 去重+headless+健康检查+智能采集 | 配合后端阶段五对接定时触发器 |
-| **admin/** | ✅ 完成 | 7 个管理页面 | 配合后端阶段五，部署后即可使用 |
+| **admin/** | ✅ 完成 | 9 个注册页面已补齐（含壁纸编辑、用户管理） | 配合后端阶段五，部署后复测管理闭环 |
 
 ### 交付清单
 
@@ -190,7 +190,7 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 | **uniCloudWallPaper/** | uni-id 配置、Schema 迁移、_before 双写、OR 查询兼容、迁移脚本、登录方法、模块化拆分（10模块）、10张Schema、收藏/评论/推荐/投稿/搜索 13 方法、admin-stats 10 方法、adminCheckWallExists 去重方法 |
 | **wallpaper/** | 登录页、Token 管理、全局登录态+推送监听、用户中心改造、API 层 26 方法、预览页收藏按钮+评论面板、投稿页、搜索页云端 API、/frontend-design 重设计 |
 | **crawler/** | API Key 配置化、云端去重、headless 无交互模式、JSON 输出、健康检查、目标数量智能策略 |
-| **admin/** | 仪表盘（4色统计卡+6快捷入口）、壁纸管理（状态Tab+审核+分页）、分类/轮播图/公告/评论管理、投稿审核（通过自动发布） |
+| **admin/** | 仪表盘（4色统计卡+7快捷入口）、壁纸管理（状态Tab+审核+分页+编辑）、分类/轮播图/公告/用户/评论管理、投稿审核（通过自动发布） |
 
 ### 部署状态
 

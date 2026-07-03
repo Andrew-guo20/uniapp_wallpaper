@@ -58,6 +58,11 @@
 				</view>
 
 				<view class="card-actions">
+					<navigator
+						class="action-btn edit"
+						:url="'/pages/wallpaper/edit?wall=' + encodeURIComponent(JSON.stringify(item))"
+						open-type="navigate"
+					>编辑</navigator>
 					<view
 						v-if="item.status !== 1"
 						class="action-btn approve"
@@ -330,6 +335,7 @@ $red: #ef4444;
 	text-align: center;
 
 	&.approve { background: rgba($green, 0.1); color: $green; }
+	&.edit { background: rgba(#6366f1, 0.1); color: #6366f1; }
 	&.offline { background: rgba($amber, 0.1); color: $amber; }
 	&.delete  { background: rgba($red, 0.08); color: $red; }
 }
