@@ -9,7 +9,7 @@
 			<view class="card" v-for="c in items" :key="c._id">
 				<text class="content">{{c.content}}</text>
 				<view class="meta-row">
-					<text class="meta">用户 {{c.uid?.substring(0,8) || '匿名'}}</text>
+					<text class="meta">用户 {{shortUid(c.uid)}}</text>
 					<view class="status-tag" :class="['tag-review','tag-pass','tag-reject'][c.status] || 'tag-review'">
 						{{['待审','已通过','已拒绝'][c.status] || '待审'}}
 					</view>
@@ -28,6 +28,7 @@ export default {
 	data() { return { items: [] } },
 	async mounted() { await this.loadData() },
 	methods: {
+		shortUid(uid) { return uid ? uid.substring(0, 8) : '匿名' },
 		async loadData() { const obj = uniCloud.importObject('wallpaper'); const res = await obj.adminGetComments({ pageSize: 50 }); if (res.errCode === 0) this.items = res.data.list },
 		async review(id, status) { const obj = uniCloud.importObject('wallpaper'); const res = await obj.adminReviewComment({ _id: id, status }); if (res.errCode === 0) { uni.showToast({ title: '已处理' }); this.loadData() } }
 	}

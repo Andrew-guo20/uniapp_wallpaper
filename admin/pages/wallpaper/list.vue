@@ -26,11 +26,11 @@
 		<view class="stats-strip" v-if="wallStats">
 			<text>共 {{wallStats.total}} 张</text>
 			<view class="stats-dot green"></view>
-			<text>已发布 {{wallStats.byStatus?.published || 0}}</text>
+			<text>已发布 {{statusCount('published')}}</text>
 			<view class="stats-dot amber"></view>
-			<text>待审核 {{wallStats.byStatus?.review || 0}}</text>
+			<text>待审核 {{statusCount('review')}}</text>
 			<view class="stats-dot red"></view>
-			<text>已下架 {{wallStats.byStatus?.offline || 0}}</text>
+			<text>已下架 {{statusCount('offline')}}</text>
 		</view>
 
 		<!-- 壁纸列表 -->
@@ -126,6 +126,12 @@ export default {
 		await this.loadData()
 	},
 	methods: {
+		getStatusCount(stats, key) {
+			return stats && stats.byStatus ? (stats.byStatus[key] || 0) : 0
+		},
+		statusCount(key) {
+			return this.getStatusCount(this.wallStats, key)
+		},
 		async loadData() {
 			uni.showLoading({ title: '加载中' })
 			try {
@@ -143,9 +149,9 @@ export default {
 					this.wallStats = statsRes.data
 					this.tabCounts = [
 						statsRes.data.total,
-						statsRes.data.byStatus?.published || 0,
-						statsRes.data.byStatus?.review || 0,
-						statsRes.data.byStatus?.offline || 0
+						this.getStatusCount(statsRes.data, 'published'),
+						this.getStatusCount(statsRes.data, 'review'),
+						this.getStatusCount(statsRes.data, 'offline')
 					]
 				}
 			} catch (e) { console.error(e) }

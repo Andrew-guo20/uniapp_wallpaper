@@ -13,5 +13,4 @@ export default {
 </script>
 
 <style lang="scss">
-@import '@/uni_modules/uni-admin/uni-admin.scss';
 </style>

@@ -118,12 +118,17 @@ export default {
 				this.stats = {
 					...statsRes.data,
 					wallCount: wallRes.data.total,
-					publishedCount: wallRes.data.byStatus?.published || 0,
-					reviewCount: wallRes.data.byStatus?.review || 0
+					publishedCount: this.getStatusCount(wallRes.data, 'published'),
+					reviewCount: this.getStatusCount(wallRes.data, 'review')
 				}
 			}
 		} catch (e) {
 			console.error('Dashboard error:', e)
+		}
+	},
+	methods: {
+		getStatusCount(stats, key) {
+			return stats && stats.byStatus ? (stats.byStatus[key] || 0) : 0
 		}
 	}
 }

@@ -62,7 +62,8 @@ export default {
 	},
 	computed: {
 		className() {
-			return this.classifies[this.classIndex]?.name || ''
+			const item = this.classifies[this.classIndex]
+			return item ? item.name : ''
 		}
 	},
 	async onLoad(query) {
@@ -92,7 +93,8 @@ export default {
 		},
 		changeClass(e) {
 			this.classIndex = Number(e.detail.value)
-			this.form.classid = this.classifies[this.classIndex]?._id || this.form.classid
+			const item = this.classifies[this.classIndex]
+			this.form.classid = item ? item._id : this.form.classid
 		},
 		changeStatus(e) {
 			this.statusIndex = Number(e.detail.value)

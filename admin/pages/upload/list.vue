@@ -11,7 +11,7 @@
 				<view class="body">
 					<text class="desc">{{u.description || '无描述'}}</text>
 					<view class="meta-row">
-						<text class="meta">{{u.tabs?.join(', ') || '无标签'}}</text>
+						<text class="meta">{{formatTags(u.tabs)}}</text>
 						<view class="status-tag" :class="['tag-review','tag-pass','tag-reject'][u.status] || 'tag-review'">
 							{{['待审核','已通过','已拒绝'][u.status] || '待审'}}
 						</view>
@@ -31,6 +31,7 @@ export default {
 	data() { return { items: [], pendingCount: 0 } },
 	async mounted() { await this.loadData() },
 	methods: {
+		formatTags(tags) { return Array.isArray(tags) && tags.length ? tags.join(', ') : '无标签' },
 		async loadData() { const obj = uniCloud.importObject('wallpaper'); const res = await obj.adminGetUploads({ pageSize: 50, status: '' }); if (res.errCode === 0) { this.items = res.data.list; this.pendingCount = this.items.filter(i => i.status === 0).length } },
 		async review(id, status) {
 			const obj = uniCloud.importObject('wallpaper')
