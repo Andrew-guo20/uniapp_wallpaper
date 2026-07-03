@@ -196,11 +196,12 @@ HBuilderX → uniCloudWallPaper/uniCloud-alipay/cloudfunctions/wallpaper → 右
 
 | 项目 | 状态 | 说明 |
 |------|:---:|------|
-| 云对象 | ✅ 已部署 | 单文件合并版 index.obj.js（1019行，62方法） |
+| 云对象 | ✅ 已部署 | 单文件合并版（1019行，62方法），含 sendPush 待重新部署 |
 | 数据库 Schema | ✅ 已部署 | 10 个 Schema |
 | uni-id 公共模块 | ✅ 已部署 | uni-config-center + uni-id-common |
 | 前端 wallpaper/ | ✅ 已测试 | 首页/登录/收藏/评论/用户中心全链路通过 |
-| 后台 admin/ | ⬜ 待运行 | 运行到浏览器 H5 |
+| 后台 admin/ | ⚠️ 待完善 | 代码完成，需 HBuilderX 安装 uni-admin 模块后运行 |
+| 定时任务 wallpaper-task | ⚠️ 受限 | 代码完成，支付宝云免费版不支持定时触发器 |
 
 ### 文档状态
 

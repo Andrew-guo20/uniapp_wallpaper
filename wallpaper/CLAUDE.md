@@ -19,8 +19,8 @@ This file provides guidance to Claude Code when working in the `wallpaper/` sub-
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一~四 ✅ 已完成，阶段五 测试通过 |
-| **已完成** | 登录/收藏/评论/推荐/投稿/推送监听，全链路已测试通过 |
+| **当前阶段** | 阶段一~四 ✅ → 阶段五 测试通过 |
+| **已完成** | 登录/收藏/评论/推荐/投稿/推送监听，全链路已测试 |
 | **下一步** | 性能优化 + 微信小程序审核提交 |
 | **新增文件** | `pages/login/login.vue`、`pages/upload/upload.vue`、`utils/auth.js` |
 | **改造文件** | `App.vue`、`pages/user/user.vue`、`pages/preview/preview.vue`、`pages/search/search.vue`、`pages/index/index.vue`、`API/apis.js`、`pages.json` |
