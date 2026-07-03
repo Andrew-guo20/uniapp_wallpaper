@@ -1,0 +1,11 @@
+{
+  "name": "wallpaper-task",
+  "cloudfunction-config": {
+    "timeout": 60,
+    "triggers": [{
+      "name": "hourly_tick",
+      "type": "timer",
+      "config": "0 7 * * * *"
+    }]
+  }
+}

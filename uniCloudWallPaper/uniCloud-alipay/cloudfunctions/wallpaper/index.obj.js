@@ -1170,6 +1170,26 @@ module.exports = {
 					downloadCount: 0, scoreCount: 0, favoriteCount: 0,
 					create_time: Date.now(), status: 1
 				})
+
+			// 推送通知：投稿已通过
+			this.sendPush({
+				uid: upload.data[0].uid,
+				title: '投稿审核通过',
+				content: '你的壁纸投稿已通过审核，已发布',
+				payload: { type: 'upload_review', wallId: upload.data[0]._id }
+			}).catch(() => {})
+			}
+		}
+		// 推送通知：投稿被拒绝
+		if (data.status === 2) {
+			const upload = await db.collection('wallpaper-user-upload').where({ _id: data._id }).get()
+			if (upload.data.length > 0) {
+				this.sendPush({
+					uid: upload.data[0].uid,
+					title: '投稿审核结果',
+					content: '你的壁纸投稿未通过: ' + (data.review_msg || '不符合要求'),
+					payload: { type: 'upload_review' }
+				}).catch(() => {})
 			}
 		}
 		return { errCode: 0, data: { updated: true } }
@@ -1207,5 +1227,29 @@ module.exports = {
 		merge(favUsers, 'favorite')
 
 		return { errCode: 0, data: { list: Object.values(userMap), total: Object.keys(userMap).length } }
-	}
+	},
+	/**
+	 * 推送通知（uni-push 2.0）
+	 * @param {string} uid 目标用户 uid
+	 * @param {string} title 通知标题
+	 * @param {string} content 通知内容
+	 * @param {object} payload 点击跳转参数 { type, wallId, noticeId }
+	 */
+	async sendPush(data = {}) {
+		data = mergeData.call(this, data)
+		if (!data.uid) return { errCode: 400, errMsg: '缺少目标用户' }
+		try {
+			await uniCloud.sendPushMessage({
+				user_id: data.uid,
+				title: data.title || '果果壁纸',
+				content: data.content || '',
+				payload: data.payload || {}
+			})
+			return { errCode: 0, data: { sent: true } }
+		} catch (e) {
+			console.error('sendPush error:', e)
+			return { errCode: 0, data: { sent: false, msg: e.message } }
+		}
+	},
+
 }
