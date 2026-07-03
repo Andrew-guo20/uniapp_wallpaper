@@ -1,12 +1,14 @@
 <template>
 	<view class="page">
-		<view class="page-header">
-			<navigator url="/pages/index/index" open-type="reLaunch" class="back">← 返回</navigator>
-			<text class="title">分类管理</text>
-			<text class="count" v-if="items.length">{{items.length}} 个分类</text>
+		<view class="topbar">
+			<navigator url="/pages/index/index" open-type="reLaunch" class="back">返回</navigator>
+			<view>
+				<text class="title">分类管理</text>
+				<text class="subtitle">{{items.length}} 个分类，按前台展示顺序排列</text>
+			</view>
 		</view>
 
-		<view class="card-list">
+		<view class="card-list" v-if="items.length">
 			<view class="card" v-for="cat in items" :key="cat._id">
 				<image :src="cat.picurl" mode="aspectFill" class="cover"></image>
 				<view class="info">
@@ -17,9 +19,9 @@
 			</view>
 		</view>
 
-		<view class="empty" v-if="!items.length">
-			<text class="empty-icon">📂</text>
-			<text>暂无分类</text>
+		<view class="empty" v-else>
+			<text class="empty-title">暂无分类</text>
+			<text class="empty-text">先创建分类后再导入壁纸</text>
 		</view>
 	</view>
 </template>
@@ -36,17 +38,97 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$bg: #f0f2f5; $card: #fff; $text: #1a1a2e; $sub: #6b7280; $green: #28B389;
-.page { padding: 30rpx; min-height: 100vh; background: $bg; }
-.page-header { display: flex; align-items: baseline; gap: 20rpx; margin-bottom: 30rpx; }
-.back { font-size: 26rpx; color: $sub; }
-.title { font-size: 36rpx; font-weight: 700; color: $text; }
-.count { font-size: 24rpx; color: $green; }
-.card { display: flex; align-items: center; background: $card; border-radius: 16rpx; padding: 20rpx; margin-bottom: 16rpx; gap: 20rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.03); }
-.cover { width: 80rpx; height: 80rpx; border-radius: 12rpx; flex-shrink: 0; }
-.info { flex: 1; }
-.name { font-size: 28rpx; font-weight: 600; color: $text; display: block; }
-.meta { font-size: 22rpx; color: $sub; display: block; margin-top: 6rpx; }
-.sort-badge { font-size: 22rpx; color: $sub; background: $bg; padding: 6rpx 16rpx; border-radius: 12rpx; }
-.empty { text-align: center; padding: 120rpx 0; color: $sub; .empty-icon { font-size: 56rpx; display: block; margin-bottom: 16rpx; } }
+$ink: #111827;
+$paper: #eef2f5;
+$panel: #fff;
+$muted: #687386;
+$line: #dce3ea;
+$green: #12b981;
+
+.page {
+	min-height: 100vh;
+	padding: 28rpx;
+	background: $paper;
+	color: $ink;
+}
+.topbar {
+	display: flex;
+	align-items: center;
+	gap: 22rpx;
+	margin: -28rpx -28rpx 24rpx;
+	padding: 28rpx;
+	background: #101827;
+	color: #fff;
+}
+.back {
+	padding: 8rpx 14rpx;
+	border: 1rpx solid rgba(255,255,255,.18);
+	border-radius: 999rpx;
+	font-size: 22rpx;
+	color: #cbd5e1;
+}
+.title {
+	display: block;
+	font-size: 34rpx;
+	font-weight: 800;
+}
+.subtitle {
+	display: block;
+	margin-top: 4rpx;
+	font-size: 21rpx;
+	color: #a8b5c6;
+}
+.card {
+	display: grid;
+	grid-template-columns: 92rpx 1fr auto;
+	gap: 20rpx;
+	align-items: center;
+	padding: 18rpx;
+	margin-bottom: 16rpx;
+	border-radius: 8rpx;
+	background: $panel;
+	border: 1rpx solid $line;
+	box-shadow: 0 10rpx 20rpx rgba(17,24,39,.05);
+}
+.cover {
+	width: 92rpx;
+	height: 92rpx;
+	border-radius: 6rpx;
+}
+.name {
+	display: block;
+	font-size: 28rpx;
+	font-weight: 800;
+}
+.meta {
+	display: block;
+	margin-top: 8rpx;
+	font-size: 22rpx;
+	color: $muted;
+}
+.sort-badge {
+	min-width: 62rpx;
+	padding: 8rpx 12rpx;
+	border-radius: 999rpx;
+	background: #e8f7f1;
+	color: $green;
+	text-align: center;
+	font-size: 22rpx;
+	font-weight: 800;
+}
+.empty {
+	padding: 120rpx 0;
+	text-align: center;
+}
+.empty-title {
+	display: block;
+	font-size: 30rpx;
+	font-weight: 800;
+}
+.empty-text {
+	display: block;
+	margin-top: 8rpx;
+	font-size: 22rpx;
+	color: $muted;
+}
 </style>

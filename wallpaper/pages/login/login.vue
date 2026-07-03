@@ -10,7 +10,7 @@
 				<view class="brand-icon">
 					<text class="icon-text">🍎</text>
 				</view>
-				<text class="brand-name">果果壁纸</text>
+				<text class="brand-name">一壁之力</text>
 				<text class="brand-desc">精选高清壁纸，每日更新</text>
 			</view>
 

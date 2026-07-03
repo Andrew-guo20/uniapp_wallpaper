@@ -1,14 +1,13 @@
 <template>
 	<view class="wallpaper-page">
-		<!-- 页头 -->
-		<view class="page-header">
-			<navigator url="/pages/index/index" open-type="reLaunch" class="back-link">
-				<text>← 返回</text>
-			</navigator>
-			<text class="page-title">壁纸管理</text>
+		<view class="topbar">
+			<navigator url="/pages/index/index" open-type="reLaunch" class="back-link">返回</navigator>
+			<view>
+				<text class="page-title">壁纸管理</text>
+				<text class="page-sub">审片、上下架与快速编辑</text>
+			</view>
 		</view>
 
-		<!-- 状态筛选 Tab -->
 		<view class="filter-tabs">
 			<view
 				v-for="(tab, i) in tabs"
@@ -17,43 +16,41 @@
 				:class="{ active: activeTab === i }"
 				@click="switchTab(i)"
 			>
-				<text>{{tab.label}}</text>
+				<text class="tab-label">{{tab.label}}</text>
 				<text class="tab-count" v-if="tabCounts[i] !== null">{{tabCounts[i]}}</text>
 			</view>
 		</view>
 
-		<!-- 统计概览 -->
 		<view class="stats-strip" v-if="wallStats">
 			<text>共 {{wallStats.total}} 张</text>
-			<view class="stats-dot green"></view>
+			<text class="dot published"></text>
 			<text>已发布 {{statusCount('published')}}</text>
-			<view class="stats-dot amber"></view>
+			<text class="dot review"></text>
 			<text>待审核 {{statusCount('review')}}</text>
-			<view class="stats-dot red"></view>
+			<text class="dot offline"></text>
 			<text>已下架 {{statusCount('offline')}}</text>
 		</view>
 
-		<!-- 壁纸列表 -->
 		<view class="wall-list" v-if="items.length">
 			<view class="wall-card" v-for="item in items" :key="item._id">
-				<view class="card-thumb">
+				<view class="thumb-wrap">
 					<image :src="item.smallPicurl" mode="aspectFill"></image>
-					<view
-						class="status-dot"
+					<text
+						class="status-pill"
 						:class="{
 							'status-published': item.status === 1,
 							'status-review': item.status === 0,
 							'status-offline': item.status === 2
 						}"
-					></view>
+					>{{statusText(item.status)}}</text>
 				</view>
 
 				<view class="card-body">
 					<text class="card-desc">{{item.description || '无描述'}}</text>
 					<view class="card-meta">
-						<text class="meta-item">★ {{item.score}}</text>
-						<text class="meta-item">↓ {{item.downloadCount}}</text>
-						<text class="meta-item" v-if="item.favoriteCount">❤ {{item.favoriteCount}}</text>
+						<text>评分 {{item.score || 0}}</text>
+						<text>下载 {{item.downloadCount || 0}}</text>
+						<text v-if="item.favoriteCount">收藏 {{item.favoriteCount}}</text>
 					</view>
 				</view>
 
@@ -63,42 +60,22 @@
 						:url="'/pages/wallpaper/edit?wall=' + encodeURIComponent(JSON.stringify(item))"
 						open-type="navigate"
 					>编辑</navigator>
-					<view
-						v-if="item.status !== 1"
-						class="action-btn approve"
-						@click="reviewItem(item._id, 1)"
-					>通过</view>
-					<view
-						v-if="item.status !== 2"
-						class="action-btn offline"
-						@click="reviewItem(item._id, 2)"
-					>下架</view>
-					<view
-						class="action-btn delete"
-						@click="deleteItem(item._id)"
-					>删除</view>
+					<view v-if="item.status !== 1" class="action-btn approve" @click="reviewItem(item._id, 1)">通过</view>
+					<view v-if="item.status !== 2" class="action-btn offline" @click="reviewItem(item._id, 2)">下架</view>
+					<view class="action-btn delete" @click="deleteItem(item._id)">删除</view>
 				</view>
 			</view>
 		</view>
 
 		<view class="empty-state" v-else>
-			<text class="empty-icon">📭</text>
-			<text class="empty-text">暂无壁纸</text>
+			<text class="empty-title">暂无壁纸</text>
+			<text class="empty-text">当前筛选条件没有内容</text>
 		</view>
 
-		<!-- 分页 -->
 		<view class="pager" v-if="total > pageSize">
-			<view
-				class="page-btn"
-				:class="{ dim: pageNum <= 1 }"
-				@click="prevPage"
-			>← 上一页</view>
+			<view class="page-btn" :class="{ dim: pageNum <= 1 }" @click="prevPage">上一页</view>
 			<text class="page-info">{{pageNum}} / {{Math.ceil(total / pageSize)}}</text>
-			<view
-				class="page-btn"
-				:class="{ dim: pageNum * pageSize >= total }"
-				@click="nextPage"
-			>下一页 →</view>
+			<view class="page-btn" :class="{ dim: pageNum * pageSize >= total }" @click="nextPage">下一页</view>
 		</view>
 	</view>
 </template>
@@ -131,6 +108,11 @@ export default {
 		},
 		statusCount(key) {
 			return this.getStatusCount(this.wallStats, key)
+		},
+		statusText(status) {
+			if (status === 1) return '已发布'
+			if (status === 2) return '已下架'
+			return '待审核'
 		},
 		async loadData() {
 			uni.showLoading({ title: '加载中' })
@@ -187,196 +169,206 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$bg: #f0f2f5;
-$card: #ffffff;
-$text: #1a1a2e;
-$sub: #6b7280;
-$green: #28B389;
+$ink: #111827;
+$panel: #fff;
+$paper: #eef2f5;
+$muted: #687386;
+$line: #dce3ea;
+$green: #12b981;
 $amber: #f59e0b;
 $red: #ef4444;
+$blue: #3b82f6;
 
 .wallpaper-page {
-	padding: 30rpx;
 	min-height: 100vh;
-	background: $bg;
+	padding: 28rpx;
+	background: $paper;
+	color: $ink;
 }
-
-// ---- 页头 ----
-.page-header {
+.topbar {
 	display: flex;
 	align-items: center;
-	gap: 24rpx;
-	margin-bottom: 30rpx;
+	gap: 22rpx;
+	margin: -28rpx -28rpx 24rpx;
+	padding: 28rpx;
+	background: #101827;
+	color: #fff;
 }
 .back-link {
-	font-size: 26rpx;
-	color: $sub;
+	padding: 8rpx 14rpx;
+	border-radius: 999rpx;
+	border: 1rpx solid rgba(255,255,255,.18);
+	font-size: 22rpx;
+	color: #cbd5e1;
 }
 .page-title {
-	font-size: 36rpx;
-	font-weight: 700;
-	color: $text;
+	display: block;
+	font-size: 34rpx;
+	font-weight: 800;
 }
-
-// ---- 筛选 Tab ----
+.page-sub {
+	display: block;
+	margin-top: 4rpx;
+	font-size: 21rpx;
+	color: #a8b5c6;
+}
 .filter-tabs {
-	display: flex;
-	gap: 16rpx;
-	margin-bottom: 20rpx;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12rpx;
+	margin-bottom: 18rpx;
 }
 .filter-tab {
-	display: flex;
-	align-items: center;
-	gap: 8rpx;
-	padding: 14rpx 28rpx;
-	border-radius: 32rpx;
-	background: $card;
-	font-size: 26rpx;
-	color: $sub;
-	font-weight: 500;
-	transition: all 0.2s;
-
-	&.active {
-		background: $green;
-		color: #fff;
-	}
+	padding: 16rpx 10rpx;
+	border-radius: 8rpx;
+	background: $panel;
+	border: 1rpx solid $line;
+	text-align: center;
+}
+.filter-tab.active {
+	background: #102033;
+	border-color: #102033;
+	color: #fff;
+}
+.tab-label,
+.tab-count {
+	display: block;
+	font-size: 22rpx;
 }
 .tab-count {
-	font-size: 22rpx;
-	opacity: 0.7;
+	margin-top: 4rpx;
+	color: $muted;
 }
-
-// ---- 统计概览 ----
+.active .tab-count {
+	color: #91f0d1;
+}
 .stats-strip {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 8rpx;
-	padding: 16rpx 0 24rpx;
-	font-size: 22rpx;
-	color: $sub;
+	gap: 10rpx;
+	margin-bottom: 18rpx;
+	font-size: 21rpx;
+	color: $muted;
 }
-.stats-dot {
+.dot {
 	width: 10rpx;
 	height: 10rpx;
 	border-radius: 50%;
-	margin: 0 6rpx 0 14rpx;
-
-	&.green { background: $green; }
-	&.amber { background: $amber; }
-	&.red   { background: $red; }
 }
-
-// ---- 壁纸卡片 ----
+.published { background: $green; }
+.review { background: $amber; }
+.offline { background: $red; }
 .wall-card {
-	display: flex;
-	background: $card;
-	border-radius: 16rpx;
-	padding: 20rpx;
+	display: grid;
+	grid-template-columns: 150rpx 1fr auto;
+	gap: 18rpx;
+	align-items: center;
+	padding: 18rpx;
 	margin-bottom: 16rpx;
-	gap: 20rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.03);
+	border-radius: 8rpx;
+	background: $panel;
+	border: 1rpx solid $line;
+	box-shadow: 0 10rpx 20rpx rgba(17,24,39,.05);
 }
-.card-thumb {
+.thumb-wrap {
 	position: relative;
-	width: 140rpx;
-	height: 100rpx;
-	flex-shrink: 0;
-	border-radius: 10rpx;
+	width: 150rpx;
+	height: 104rpx;
+	border-radius: 6rpx;
 	overflow: hidden;
-
-	image {
-		width: 100%;
-		height: 100%;
-	}
+	background: #d9e2ea;
 }
-.status-dot {
+.thumb-wrap image {
+	width: 100%;
+	height: 100%;
+}
+.status-pill {
 	position: absolute;
-	top: 8rpx;
-	right: 8rpx;
-	width: 14rpx;
-	height: 14rpx;
-	border-radius: 50%;
-	border: 2rpx solid rgba(255,255,255,0.9);
-
-	&.status-published { background: $green; }
-	&.status-review    { background: $amber; }
-	&.status-offline   { background: $red; }
+	left: 8rpx;
+	bottom: 8rpx;
+	padding: 3rpx 9rpx;
+	border-radius: 999rpx;
+	background: rgba(16,24,39,.76);
+	color: #fff;
+	font-size: 18rpx;
 }
+.status-published { color: #bff9de; }
+.status-review { color: #ffe1a3; }
+.status-offline { color: #fecaca; }
 .card-body {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 10rpx;
-	overflow: hidden;
+	min-width: 0;
 }
 .card-desc {
-	font-size: 28rpx;
-	font-weight: 500;
-	color: $text;
+	display: block;
+	font-size: 27rpx;
+	font-weight: 700;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 .card-meta {
 	display: flex;
-	gap: 20rpx;
-}
-.meta-item {
-	font-size: 22rpx;
-	color: $sub;
+	flex-wrap: wrap;
+	gap: 12rpx;
+	margin-top: 10rpx;
+	font-size: 20rpx;
+	color: $muted;
 }
 .card-actions {
 	display: flex;
 	flex-direction: column;
-	gap: 10rpx;
-	justify-content: center;
-	flex-shrink: 0;
+	gap: 8rpx;
 }
 .action-btn {
-	font-size: 22rpx;
-	font-weight: 600;
-	padding: 8rpx 24rpx;
-	border-radius: 20rpx;
+	min-width: 76rpx;
+	padding: 7rpx 12rpx;
+	border-radius: 999rpx;
 	text-align: center;
-
-	&.approve { background: rgba($green, 0.1); color: $green; }
-	&.edit { background: rgba(#6366f1, 0.1); color: #6366f1; }
-	&.offline { background: rgba($amber, 0.1); color: $amber; }
-	&.delete  { background: rgba($red, 0.08); color: $red; }
+	font-size: 21rpx;
+	font-weight: 700;
 }
-
-// ---- 空状态 ----
+.edit { background: rgba($blue,.12); color: $blue; }
+.approve { background: rgba($green,.12); color: $green; }
+.offline { background: rgba($amber,.14); color: #b66d00; }
+.delete { background: rgba($red,.1); color: $red; }
 .empty-state {
-	text-align: center;
 	padding: 120rpx 0;
-	.empty-icon { font-size: 64rpx; display: block; }
-	.empty-text { font-size: 26rpx; color: $sub; display: block; margin-top: 16rpx; }
+	text-align: center;
+	color: $muted;
 }
-
-// ---- 分页 ----
+.empty-title {
+	display: block;
+	font-size: 30rpx;
+	font-weight: 800;
+	color: $ink;
+}
+.empty-text {
+	display: block;
+	margin-top: 8rpx;
+	font-size: 22rpx;
+}
 .pager {
 	display: flex;
-	justify-content: center;
 	align-items: center;
-	gap: 32rpx;
-	padding: 40rpx 0 20rpx;
+	justify-content: center;
+	gap: 24rpx;
+	padding: 30rpx 0;
 }
 .page-btn {
-	font-size: 26rpx;
+	padding: 10rpx 22rpx;
+	border-radius: 999rpx;
+	background: $panel;
 	color: $green;
-	font-weight: 500;
-	padding: 10rpx 24rpx;
-	border-radius: 20rpx;
-	background: $card;
-
-	&.dim {
-		color: #ccc;
-		pointer-events: none;
-	}
+	font-size: 24rpx;
+	font-weight: 700;
+}
+.page-btn.dim {
+	color: #b8c1cc;
+	pointer-events: none;
 }
 .page-info {
-	font-size: 24rpx;
-	color: $sub;
+	font-size: 22rpx;
+	color: $muted;
 }
 </style>

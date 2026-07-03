@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in the `wallpaper/` sub-
 
 ## 定位
 
-果果壁纸前端 — uni-app Vue3 跨端小程序，支持微信小程序和 H5。面向终端用户，负责 UI 展示和交互。
+一壁之力前端 — uni-app Vue3 跨端小程序，支持微信小程序和 H5。面向终端用户，负责 UI 展示和交互。
 
 ## 开发技能
 

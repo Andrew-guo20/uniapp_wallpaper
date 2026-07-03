@@ -1,7 +1,7 @@
 {
-	"name": "果果壁纸-管理后台",
+	"name": "一壁之力-管理后台",
 	"appid": "__UNI_ADMIN_WALLPAPER",
-	"description": "果果壁纸 uni-admin 后台管理系统",
+	"description": "一壁之力 uni-admin 后台管理系统",
 	"versionName": "2.0.0",
 	"versionCode": "200",
 	"uniStatistics": {
@@ -12,7 +12,7 @@
 	},
 	"web": {
 		"app": {
-			"title": "果果壁纸后台"
+			"title": "一壁之力后台"
 		}
 	}
 }

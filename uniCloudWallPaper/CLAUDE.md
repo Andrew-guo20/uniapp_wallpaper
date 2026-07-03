@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 ## 定位
 
-果果壁纸后端 — uniCloud 支付宝云项目，包含云对象、数据库 Schema、uni-id 用户体系、uni-admin 后台管理。负责全部业务逻辑和数据存取。
+一壁之力后端 — uniCloud 支付宝云项目，包含云对象、数据库 Schema、uni-id 用户体系、uni-admin 后台管理。负责全部业务逻辑和数据存取。
 
 ## 开发进度
 

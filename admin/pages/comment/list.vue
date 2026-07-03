@@ -1,11 +1,14 @@
 <template>
 	<view class="page">
-		<view class="page-header">
-			<navigator url="/pages/index/index" open-type="reLaunch" class="back">← 返回</navigator>
-			<text class="title">评论管理</text>
-			<text class="count" v-if="items.length">共 {{items.length}} 条</text>
+		<view class="topbar">
+			<navigator url="/pages/index/index" open-type="reLaunch" class="back">返回</navigator>
+			<view>
+				<text class="title">评论管理</text>
+				<text class="subtitle">共 {{items.length}} 条评论</text>
+			</view>
 		</view>
-		<view class="list">
+
+		<view class="list" v-if="items.length">
 			<view class="card" v-for="c in items" :key="c._id">
 				<text class="content">{{c.content}}</text>
 				<view class="meta-row">
@@ -20,33 +23,70 @@
 				</view>
 			</view>
 		</view>
-		<view class="empty" v-if="!items.length"><text class="empty-icon">💬</text><text>暂无评论</text></view>
+
+		<view class="empty" v-else>
+			<text class="empty-title">暂无评论</text>
+			<text class="empty-text">需要审核的评论会显示在这里</text>
+		</view>
 	</view>
 </template>
+
 <script>
 export default {
 	data() { return { items: [] } },
 	async mounted() { await this.loadData() },
 	methods: {
 		shortUid(uid) { return uid ? uid.substring(0, 8) : '匿名' },
-		async loadData() { const obj = uniCloud.importObject('wallpaper'); const res = await obj.adminGetComments({ pageSize: 50 }); if (res.errCode === 0) this.items = res.data.list },
-		async review(id, status) { const obj = uniCloud.importObject('wallpaper'); const res = await obj.adminReviewComment({ _id: id, status }); if (res.errCode === 0) { uni.showToast({ title: '已处理' }); this.loadData() } }
+		async loadData() {
+			const obj = uniCloud.importObject('wallpaper')
+			const res = await obj.adminGetComments({ pageSize: 50 })
+			if (res.errCode === 0) this.items = res.data.list
+		},
+		async review(id, status) {
+			const obj = uniCloud.importObject('wallpaper')
+			const res = await obj.adminReviewComment({ _id: id, status })
+			if (res.errCode === 0) { uni.showToast({ title: '已处理' }); this.loadData() }
+		}
 	}
 }
 </script>
+
 <style lang="scss" scoped>
-$bg: #f0f2f5; $card: #fff; $text: #1a1a2e; $sub: #6b7280; $green: #28B389; $amber: #f59e0b; $red: #ef4444;
-.page { padding: 30rpx; min-height: 100vh; background: $bg; }
-.page-header { display: flex; align-items: baseline; gap: 20rpx; margin-bottom: 30rpx; }
-.back { font-size: 26rpx; color: $sub; }
-.title { font-size: 36rpx; font-weight: 700; color: $text; }
-.count { font-size: 24rpx; color: $green; }
-.card { background: $card; border-radius: 16rpx; padding: 24rpx; margin-bottom: 16rpx; box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.03); }
-.content { font-size: 28rpx; color: $text; display: block; line-height: 1.5; }
-.meta-row { display: flex; justify-content: space-between; align-items: center; margin-top: 14rpx; }
-.meta { font-size: 22rpx; color: $sub; }
-.status-tag { font-size: 20rpx; padding: 4rpx 14rpx; border-radius: 10rpx; &.tag-pass { background: rgba($green,0.1); color: $green; } &.tag-review { background: rgba($amber,0.1); color: $amber; } &.tag-reject { background: rgba($red,0.1); color: $red; } }
-.actions { display: flex; gap: 16rpx; margin-top: 16rpx; }
-.btn { font-size: 22rpx; font-weight: 600; padding: 10rpx 24rpx; border-radius: 20rpx; &.pass { background: rgba($green,0.1); color: $green; } &.reject { background: rgba($red,0.08); color: $red; } }
-.empty { text-align: center; padding: 120rpx 0; color: $sub; .empty-icon { font-size: 56rpx; display: block; margin-bottom: 16rpx; } }
+$ink: #111827;
+$paper: #eef2f5;
+$panel: #fff;
+$muted: #687386;
+$line: #dce3ea;
+$green: #12b981;
+$amber: #f59e0b;
+$red: #ef4444;
+
+.page { min-height: 100vh; padding: 28rpx; background: $paper; color: $ink; }
+.topbar {
+	display: flex; align-items: center; gap: 22rpx;
+	margin: -28rpx -28rpx 24rpx; padding: 28rpx;
+	background: #101827; color: #fff;
+}
+.back { padding: 8rpx 14rpx; border: 1rpx solid rgba(255,255,255,.18); border-radius: 999rpx; font-size: 22rpx; color: #cbd5e1; }
+.title { display: block; font-size: 34rpx; font-weight: 800; }
+.subtitle { display: block; margin-top: 4rpx; font-size: 21rpx; color: #a8b5c6; }
+.card {
+	padding: 22rpx; margin-bottom: 16rpx; border-radius: 8rpx;
+	background: $panel; border: 1rpx solid $line;
+	box-shadow: 0 10rpx 20rpx rgba(17,24,39,.05);
+}
+.content { display: block; font-size: 28rpx; line-height: 1.55; font-weight: 700; }
+.meta-row { display: flex; justify-content: space-between; align-items: center; gap: 16rpx; margin-top: 16rpx; }
+.meta { font-size: 22rpx; color: $muted; }
+.status-tag { padding: 6rpx 14rpx; border-radius: 999rpx; font-size: 21rpx; font-weight: 800; }
+.tag-pass { background: rgba($green,.12); color: $green; }
+.tag-review { background: rgba($amber,.15); color: #a86200; }
+.tag-reject { background: rgba($red,.1); color: $red; }
+.actions { display: flex; gap: 14rpx; margin-top: 18rpx; }
+.btn { min-width: 90rpx; padding: 9rpx 16rpx; border-radius: 999rpx; text-align: center; font-size: 22rpx; font-weight: 800; }
+.pass { background: rgba($green,.12); color: $green; }
+.reject { background: rgba($red,.1); color: $red; }
+.empty { padding: 120rpx 0; text-align: center; }
+.empty-title { display: block; font-size: 30rpx; font-weight: 800; }
+.empty-text { display: block; margin-top: 8rpx; font-size: 22rpx; color: $muted; }
 </style>

@@ -1,25 +1,25 @@
 <template>
 	<view class="user-page">
-		<view class="page-header">
-			<navigator url="/pages/index/index" open-type="reLaunch" class="back-link">Back</navigator>
+		<view class="topbar">
+			<navigator url="/pages/index/index" open-type="reLaunch" class="back-link">返回</navigator>
 			<view>
-				<text class="page-title">Users</text>
-				<text class="page-sub">{{total}} active identities</text>
+				<text class="page-title">用户管理</text>
+				<text class="page-sub">{{total}} 个活跃身份</text>
 			</view>
 		</view>
 
 		<view class="summary-strip">
 			<view class="summary-item">
+				<text class="summary-label">下载</text>
 				<text class="summary-num">{{totals.downloads}}</text>
-				<text class="summary-label">Downloads</text>
 			</view>
 			<view class="summary-item">
+				<text class="summary-label">评分</text>
 				<text class="summary-num">{{totals.scores}}</text>
-				<text class="summary-label">Scores</text>
 			</view>
 			<view class="summary-item">
+				<text class="summary-label">收藏</text>
 				<text class="summary-num">{{totals.favorites}}</text>
-				<text class="summary-label">Favorites</text>
 			</view>
 		</view>
 
@@ -29,17 +29,17 @@
 				<view class="body">
 					<text class="name">{{item.id || 'anonymous'}}</text>
 					<view class="metrics">
-						<text>Down {{item.downloads || 0}}</text>
-						<text>Score {{item.scores || 0}}</text>
-						<text>Fav {{item.favorites || 0}}</text>
+						<text>下载 {{item.downloads || 0}}</text>
+						<text>评分 {{item.scores || 0}}</text>
+						<text>收藏 {{item.favorites || 0}}</text>
 					</view>
 				</view>
 			</view>
 		</view>
 
 		<view class="empty" v-else>
-			<text class="empty-icon">ID</text>
-			<text>No user activity yet</text>
+			<text class="empty-title">暂无用户活动</text>
+			<text class="empty-text">下载、评分或收藏后会出现在这里</text>
 		</view>
 	</view>
 </template>
@@ -67,7 +67,7 @@ export default {
 	},
 	methods: {
 		async loadData() {
-			uni.showLoading({ title: 'Loading' })
+			uni.showLoading({ title: '加载中' })
 			try {
 				const obj = uniCloud.importObject('wallpaper')
 				const res = await obj.adminGetUsers()
@@ -88,132 +88,49 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$bg: #f0f2f5;
-$card: #ffffff;
-$text: #1a1a2e;
-$sub: #6b7280;
-$green: #28B389;
-$indigo: #6366f1;
+$ink: #111827;
+$paper: #eef2f5;
+$panel: #fff;
+$muted: #687386;
+$line: #dce3ea;
+$green: #12b981;
+$blue: #3b82f6;
 $amber: #f59e0b;
 
-.user-page {
-	min-height: 100vh;
-	padding: 30rpx;
-	background: $bg;
+.user-page { min-height: 100vh; padding: 28rpx; background: $paper; color: $ink; }
+.topbar {
+	display: flex; align-items: center; gap: 22rpx;
+	margin: -28rpx -28rpx 24rpx; padding: 28rpx;
+	background: #101827; color: #fff;
 }
-.page-header {
-	display: flex;
-	align-items: center;
-	gap: 24rpx;
-	margin-bottom: 28rpx;
-}
-.back-link {
-	font-size: 26rpx;
-	color: $sub;
-}
-.page-title {
-	display: block;
-	font-size: 36rpx;
-	font-weight: 700;
-	color: $text;
-}
-.page-sub {
-	display: block;
-	margin-top: 4rpx;
-	font-size: 22rpx;
-	color: $sub;
-}
-.summary-strip {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16rpx;
-	margin-bottom: 20rpx;
-}
+.back-link { padding: 8rpx 14rpx; border: 1rpx solid rgba(255,255,255,.18); border-radius: 999rpx; font-size: 22rpx; color: #cbd5e1; }
+.page-title { display: block; font-size: 34rpx; font-weight: 800; }
+.page-sub { display: block; margin-top: 4rpx; font-size: 21rpx; color: #a8b5c6; }
+.summary-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14rpx; margin-bottom: 18rpx; }
 .summary-item {
-	background: $card;
-	border-radius: 16rpx;
-	padding: 22rpx 18rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
+	padding: 20rpx; border-radius: 8rpx; background: $panel; border: 1rpx solid $line;
+	box-shadow: 0 10rpx 20rpx rgba(17,24,39,.05);
 }
-.summary-num {
-	display: block;
-	font-size: 34rpx;
-	font-weight: 700;
-	color: $text;
-}
-.summary-label {
-	display: block;
-	margin-top: 4rpx;
-	font-size: 20rpx;
-	color: $sub;
-}
+.summary-label { display: block; font-size: 21rpx; color: $muted; }
+.summary-num { display: block; margin-top: 8rpx; font-size: 40rpx; line-height: 1; font-weight: 800; }
 .user-card {
-	display: flex;
-	align-items: center;
-	gap: 18rpx;
-	padding: 20rpx;
-	margin-bottom: 16rpx;
-	background: $card;
-	border-radius: 16rpx;
-	box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
+	display: flex; align-items: center; gap: 18rpx;
+	padding: 18rpx; margin-bottom: 16rpx; border-radius: 8rpx;
+	background: $panel; border: 1rpx solid $line;
+	box-shadow: 0 10rpx 20rpx rgba(17,24,39,.05);
 }
 .avatar {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 78rpx;
-	height: 78rpx;
-	border-radius: 18rpx;
-	background: linear-gradient(135deg, rgba($green, 0.16), rgba($indigo, 0.16));
-	color: $green;
-	font-size: 24rpx;
-	font-weight: 800;
-	flex-shrink: 0;
+	display: flex; align-items: center; justify-content: center;
+	width: 78rpx; height: 78rpx; border-radius: 8rpx;
+	background: #e8f7f1; color: $green; font-size: 24rpx; font-weight: 800;
 }
-.body {
-	min-width: 0;
-	flex: 1;
-}
-.name {
-	display: block;
-	font-size: 26rpx;
-	font-weight: 600;
-	color: $text;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.metrics {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 14rpx;
-	margin-top: 8rpx;
-	font-size: 21rpx;
-	color: $sub;
-}
-.metrics text:first-child {
-	color: $green;
-}
-.metrics text:nth-child(2) {
-	color: $amber;
-}
-.metrics text:nth-child(3) {
-	color: $indigo;
-}
-.empty {
-	text-align: center;
-	padding: 120rpx 0;
-	color: $sub;
-}
-.empty-icon {
-	display: block;
-	width: 70rpx;
-	height: 70rpx;
-	line-height: 70rpx;
-	margin: 0 auto 16rpx;
-	border-radius: 18rpx;
-	background: $card;
-	color: $green;
-	font-weight: 800;
-}
+.body { min-width: 0; flex: 1; }
+.name { display: block; font-size: 26rpx; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.metrics { display: flex; flex-wrap: wrap; gap: 14rpx; margin-top: 8rpx; font-size: 21rpx; color: $muted; }
+.metrics text:first-child { color: $green; }
+.metrics text:nth-child(2) { color: $amber; }
+.metrics text:nth-child(3) { color: $blue; }
+.empty { padding: 120rpx 0; text-align: center; }
+.empty-title { display: block; font-size: 30rpx; font-weight: 800; }
+.empty-text { display: block; margin-top: 8rpx; font-size: 22rpx; color: $muted; }
 </style>

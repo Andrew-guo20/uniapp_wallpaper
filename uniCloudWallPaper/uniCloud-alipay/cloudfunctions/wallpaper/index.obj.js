@@ -1,4 +1,4 @@
-// 果果壁纸 — 云对象（单文件合并版 v2.0）
+// 一壁之力 — 云对象（单文件合并版 v2.0）
 // 支付宝云不支持 require('./xxx') 同目录模块引用，部署前合并为单文件
 // 模块源码见同名 .js 文件的 module.exports 部分
 
@@ -1241,7 +1241,7 @@ module.exports = {
 		try {
 			await uniCloud.sendPushMessage({
 				user_id: data.uid,
-				title: data.title || '果果壁纸',
+				title: data.title || '一壁之力',
 				content: data.content || '',
 				payload: data.payload || {}
 			})

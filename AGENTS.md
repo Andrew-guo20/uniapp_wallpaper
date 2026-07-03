@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## 项目概述
 
-果果壁纸 — uni-app (Vue3) 跨端壁纸小程序，支持微信小程序和 H5。后端采用 uniCloud 支付宝云，包含 6 张数据库表、32 个云对象方法，以及 Python 壁纸采集器。
+一壁之力 — uni-app (Vue3) 跨端壁纸小程序，支持微信小程序和 H5。后端采用 uniCloud 支付宝云，包含 6 张数据库表、32 个云对象方法，以及 Python 壁纸采集器。
 
 ## 项目结构
 
