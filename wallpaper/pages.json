@@ -13,12 +13,6 @@
 			}
 		},
 		{
-			"path": "pages/upload/upload",
-			"style": {
-				"navigationBarTitleText": "投稿"
-			}
-		},
-		{
 			"path": "pages/classify/classify",
 			"style": {
 				"navigationBarTitleText": "分类"
@@ -56,6 +50,13 @@
 				"navigationStyle": "default"
 			}
 		},
+		{
+			"path": "pages/privacy/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策"
+			}
+		},
+
 		{
 			"path": "pages/search/search",
 			"style": {

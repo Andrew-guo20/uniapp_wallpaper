@@ -153,9 +153,10 @@
 				</view>
 			</scroll-view>
 			<view class="commentEmpty" v-else>
-				<text>暂无评论，快来抢沙发吧~</text>
+				<text>暂无评论</text>
 			</view>
-			<view class="commentInput">
+			<!-- TODO: 个人主体审核通过后恢复评论输入 — v-if="false" -->
+			<view class="commentInput" v-if="false">
 				<input v-model="commentText" placeholder="说点什么..." :disabled="commentLoading" confirm-type="send" @confirm="submitComment" />
 				<view class="sendBtn" @click="submitComment">发送</view>
 			</view>
