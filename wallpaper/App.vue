@@ -53,6 +53,9 @@
 					// 根据推送类型跳转
 					if (payload.type === 'new_wallpaper') {
 						uni.navigateTo({ url: '/pages/preview/preview?id=' + payload.wallId })
+					} else if (payload.type === 'new_batch') {
+						// 批量新壁纸上架 → 跳转分类页浏览
+						uni.switchTab({ url: '/pages/classify/classify' })
 					} else if (payload.type === 'upload_review') {
 						uni.showToast({ title: '你的投稿审核结果已更新', icon: 'none' })
 					} else if (payload.type === 'announcement') {

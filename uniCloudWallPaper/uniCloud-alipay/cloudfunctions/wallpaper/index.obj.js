@@ -994,6 +994,14 @@ module.exports = {
 			create_time: Date.now(), status: w.status !== undefined ? w.status : 1
 		}))
 		const result = await db.collection('wallpaper-list').add(walls)
+		// 新壁纸上架推送（不阻塞返回）
+		if (result.inserted) {
+			this.pushToAllUsers({
+				title: '一壁之力',
+				content: `新增 ${result.inserted} 张精美壁纸，快来看看吧`,
+				payload: { type: 'new_batch' }
+			}).catch(e => console.error('batch push failed:', e.message))
+		}
 		return { errCode: 0, data: { inserted: result.inserted } }
 	},
 
@@ -1017,6 +1025,14 @@ module.exports = {
 			title: data.title, content: data.content, author: data.author || '',
 			select: data.select || false, view_count: 0, publish_date: Date.now(), create_time: Date.now()
 		})
+		// 可选：发布公告时推送给所有用户
+		if (data.pushAll) {
+			this.pushToAllUsers({
+				title: '公告：' + data.title,
+				content: data.content.substring(0, 50) + (data.content.length > 50 ? '...' : ''),
+				payload: { type: 'announcement', noticeId: result.id }
+			}).catch(e => console.error('news push failed:', e.message))
+		}
 		return { errCode: 0, data: { id: result.id } }
 	},
 	async adminUpdateNews(data = {}) {
@@ -1234,10 +1250,28 @@ module.exports = {
 	 * @param {string} title 通知标题
 	 * @param {string} content 通知内容
 	 * @param {object} payload 点击跳转参数 { type, wallId, noticeId }
+	 * @param {number} dailyLimit 每人每日推送上限（默认 3）
 	 */
 	async sendPush(data = {}) {
 		data = mergeData.call(this, data)
 		if (!data.uid) return { errCode: 400, errMsg: '缺少目标用户' }
+
+		// 频率控制：每人每天最多 N 条（默认 3）
+		const dailyLimit = data.dailyLimit || 3
+		const today = new Date()
+		today.setHours(0, 0, 0, 0)
+		try {
+			const pushCount = await db.collection('wallpaper-push-log')
+				.where({ uid: data.uid, create_time: dbCmd.gte(today.getTime()) })
+				.count()
+			if (pushCount.total >= dailyLimit) {
+				return { errCode: 0, data: { sent: false, msg: '超过每日推送上限' } }
+			}
+		} catch (e) {
+			// 新表首次查询可能抛异常，忽略频率检查继续推送
+			console.warn('sendPush count check failed:', e.message)
+		}
+
 		try {
 			await uniCloud.sendPushMessage({
 				user_id: data.uid,
@@ -1245,11 +1279,50 @@ module.exports = {
 				content: data.content || '',
 				payload: data.payload || {}
 			})
+			// 记录推送日志（异步，不阻塞返回）
+			db.collection('wallpaper-push-log').add({
+				uid: data.uid, title: data.title, content: data.content,
+				create_time: Date.now()
+			}).catch(e => console.error('push-log write failed:', e.message))
 			return { errCode: 0, data: { sent: true } }
 		} catch (e) {
 			console.error('sendPush error:', e)
 			return { errCode: 0, data: { sent: false, msg: e.message } }
 		}
+	},
+
+	/**
+	 * 批量推送给所有活跃用户（新壁纸上架 / 公告发布等场景）
+	 * @param {string} title 通知标题
+	 * @param {string} content 通知内容
+	 * @param {object} payload 点击跳转参数
+	 * @param {number} maxUsers 最大推送用户数（默认 500，防止云函数超时）
+	 */
+	async pushToAllUsers(data = {}) {
+		data = mergeData.call(this, data)
+		if (!data.title && !data.content) return { errCode: 400, errMsg: '缺少推送内容' }
+		const maxUsers = data.maxUsers || 500
+
+		// 从收藏/评分/下载记录聚合去重所有 uid
+		const [favUsers, scoreUsers, dlUsers] = await Promise.all([
+			db.collection('wallpaper-favorites').aggregate().group({ _id: '$uid' }).end(),
+			db.collection('wallpaper-user-score').aggregate().group({ _id: '$uid' }).end(),
+			db.collection('wallpaper-download-record').aggregate().group({ _id: '$uid' }).end()
+		])
+		const uidSet = new Set()
+		;[favUsers, scoreUsers, dlUsers].forEach(list => {
+			(list.data || []).forEach(item => { if (item._id) uidSet.add(item._id) })
+		})
+		const uids = [...uidSet].filter(Boolean).slice(0, maxUsers)
+
+		let sent = 0
+		for (const uid of uids) {
+			const res = await this.sendPush({
+				uid, title: data.title, content: data.content, payload: data.payload || {}
+			})
+			if (res.data && res.data.sent) sent++
+		}
+		return { errCode: 0, data: { total: uids.length, sent } }
 	},
 
 }
