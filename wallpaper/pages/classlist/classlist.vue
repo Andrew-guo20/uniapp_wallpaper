@@ -8,7 +8,7 @@
 				v-for="itme in classifyDetailList" 
 				:key="itme._id"
 			>
-				<image :src="itme.smallPicurl" mode="aspectFill"></image>
+				<image :src="itme.smallPicurl" mode="aspectFill" lazy-load></image>
 			</navigator>
 		</view>
 		<view class="loadingLayout" v-if="classifyDetailList.length || noData">

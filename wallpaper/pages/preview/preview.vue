@@ -437,15 +437,28 @@
 		imgLoaded.value[index] = true
 	}
 
-	// 解决首页加载额外图片的问题
+	// 解决首页加载额外图片的问题 + 预加载相邻图片
 	const readImgsFun = ()=>{
+		const len = classList.value.length
+		const i = currentIndex.value
 		readImgs.value.push(
-			currentIndex.value <= 0 ? classList.value.length-1 : currentIndex.value-1,
-			currentIndex.value,
-			currentIndex.value >= classList.value.length-1 ? 0 : currentIndex.value+1
+			i - 2,  // 当前-2
+			i - 1,  // 当前-1
+			i,      // 当前
+			i + 1,  // 当前+1
+			i + 2   // 当前+2
 		)
-		// Set 是 ES6（ES2015）引入的一种新的内置对象，它存储一组唯一的值（任何类型的原始值或对象引用），并且会按照值插入的顺序进行迭代
+		// 归一化索引（处理首尾循环）
+		readImgs.value = readImgs.value.map(idx => ((idx % len) + len) % len)
 		readImgs.value = [...new Set(readImgs.value)]
+		// 预加载大图到原生缓存：提前下载相邻的全尺寸 picurl
+		const preloadIdx = [(i + 2) % len, (i - 2 + len) % len]
+		preloadIdx.forEach(idx => {
+			const item = classList.value[idx]
+			if (item && item.picurl) {
+				uni.getImageInfo({ src: item.picurl, success: () => {}, fail: () => {} })
+			}
+		})
 	}
 	onLoad(async (e)=>{
 		if(!e.id) goToHome()

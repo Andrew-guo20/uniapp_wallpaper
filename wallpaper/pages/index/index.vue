@@ -154,10 +154,12 @@ onShareTimeline(()=>{
 
 
 
-getBanner()
-getDayRandom()
-getNotice()
-getClassify()
+Promise.all([
+	getBanner(),
+	getDayRandom(),
+	getNotice(),
+	getClassify()
+])
 </script>
 
 <style lang="scss" scoped>
