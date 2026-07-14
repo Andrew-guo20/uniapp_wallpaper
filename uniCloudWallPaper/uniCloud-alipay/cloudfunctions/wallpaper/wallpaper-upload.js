@@ -1,7 +1,7 @@
 /**
  * 用户投稿相关方法
  */
-const { db, mergeData, parsePagination } = require('./common')
+const { db, mergeData, hasSensitiveWord, msgSecCheck, parsePagination } = require('./common')
 
 module.exports = {
 
@@ -14,10 +14,27 @@ module.exports = {
 		if (!data.classid || !data.picurl || !data.smallPicurl)
 			return { errCode: 400, errMsg: '分类、原图和缩略图为必填项' }
 
+		// 检测描述文本安全
+		const desc = (data.description || '').trim()
+		if (desc) {
+			if (hasSensitiveWord(desc)) return { errCode: 400, errMsg: '描述包含不当内容，请修改后重试' }
+			const check = await msgSecCheck(desc)
+			if (!check.pass) return { errCode: 400, errMsg: '描述内容违反平台规范，请修改后重试' }
+		}
+
+		// 检测标签文本安全
+		const tabs = data.tabs || []
+		if (tabs.length) {
+			const tabsText = tabs.join(' ')
+			if (hasSensitiveWord(tabsText)) return { errCode: 400, errMsg: '标签包含不当内容，请修改后重试' }
+			const check = await msgSecCheck(tabsText)
+			if (!check.pass) return { errCode: 400, errMsg: '标签内容违反平台规范，请修改后重试' }
+		}
+
 		const result = await db.collection('wallpaper-user-upload').add({
 			uid: this.uid, picurl: data.picurl, smallPicurl: data.smallPicurl,
-			classid: data.classid, description: data.description || '',
-			tabs: data.tabs || [], status: 0, create_time: Date.now()
+			classid: data.classid, description: desc,
+			tabs: tabs, status: 0, create_time: Date.now()
 		})
 		return { errCode: 0, data: { id: result.id } }
 	},

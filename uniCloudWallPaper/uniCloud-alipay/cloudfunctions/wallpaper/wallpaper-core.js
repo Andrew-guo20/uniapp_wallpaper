@@ -2,7 +2,7 @@
  * 壁纸核心方法 — 用户端调用
  * 轮播图 / 推荐 / 分类 / 壁纸列表 / 详情 / 评分 / 下载 / 公告 / 搜索
  */
-const { db, dbCmd, mergeData, parsePagination } = require('./common')
+const { db, dbCmd, mergeData, hasSensitiveWord, parsePagination } = require('./common')
 
 module.exports = {
 
@@ -149,6 +149,9 @@ module.exports = {
 		const { pageNum, pageSize } = parsePagination(data)
 		const keyword = (data.keyword || '').trim()
 		if (!keyword) return { errCode: 0, data: [] }
+
+		// 搜索词安全检测：违规关键词拒绝搜索，避免污染热门搜索词
+		if (hasSensitiveWord(keyword)) return { errCode: 400, errMsg: '搜索关键词不符合平台规范' }
 
 		// 记录搜索词（异步，不阻塞返回）
 		db.collection('wallpaper-search-history').add({

@@ -1,7 +1,7 @@
 /**
  * 评论相关方法 — add / get / delete
  */
-const { db, mergeData, hasSensitiveWord, parsePagination } = require('./common')
+const { db, mergeData, hasSensitiveWord, msgSecCheck, parsePagination } = require('./common')
 
 module.exports = {
 
@@ -13,7 +13,13 @@ module.exports = {
 		const content = (data.content || '').trim()
 		if (content.length === 0) return { errCode: 400, errMsg: '评论内容不能为空' }
 		if (content.length > 500) return { errCode: 400, errMsg: '评论内容不能超过500字' }
+
+		// 本地敏感词快速过滤
 		if (hasSensitiveWord(content)) return { errCode: 400, errMsg: '评论包含不当内容，请修改后重试' }
+
+		// 微信 msgSecCheck 文本安全检测（API 降级时仍放行）
+		const safety = await msgSecCheck(content)
+		if (!safety.pass) return { errCode: 400, errMsg: '评论内容违反平台规范，请修改后重试' }
 
 		const result = await db.collection('wallpaper-comments').add({
 			wallId: data.wallId, uid: this.uid, content,

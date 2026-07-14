@@ -1,7 +1,7 @@
 /**
  * 后台管理方法 — 轮播图 / 分类 / 壁纸 / 公告 CRUD + 上传 + 批量导入 + 统计
  */
-const { db, dbCmd, mergeData } = require('./common')
+const { db, dbCmd, mergeData, imgSecCheck } = require('./common')
 
 module.exports = {
 
@@ -142,8 +142,14 @@ module.exports = {
 	async adminUpload(data = {}) {
 		data = mergeData.call(this, data)
 		if (!data.fileName || !data.base64) return { errCode: 400, errMsg: 'fileName 和 base64 为必填项' }
+
+		// 微信图片安全检测
+		const imageBuffer = Buffer.from(data.base64, 'base64')
+		const imgCheck = await imgSecCheck(imageBuffer)
+		if (!imgCheck.pass) return { errCode: 400, errMsg: '图片内容违反平台规范，请更换图片' }
+
 		const result = await uniCloud.uploadFile({
-			cloudPath: `wallpaper/${data.fileName}`, fileContent: Buffer.from(data.base64, 'base64')
+			cloudPath: `wallpaper/${data.fileName}`, fileContent: imageBuffer
 		})
 		const urlResult = await uniCloud.getTempFileURL({ fileList: [result.fileID] })
 		return { errCode: 0, data: { fileID: result.fileID, cloudURL: urlResult.fileList[0].tempFileURL || result.fileID } }

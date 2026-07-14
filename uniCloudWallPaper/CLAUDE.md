@@ -12,10 +12,10 @@ This file provides guidance to Claude Code when working in the `uniCloudWallPape
 
 | 状态 | 说明 |
 |------|------|
-| **当前阶段** | 阶段一~四 ✅ 已部署，阶段五（运营能力）待开始 |
-| **已完成** | uni-id/Schema/互动API，云对象已部署（62方法），sendPush 已写完 |
-| **下一步** | 重新部署云对象（含 sendPush）；定时触发器因阿里云限制暂不可用 |
-| **架构** | 10模块源文件 + 合并部署文件 + 10张Schema + 62方法 |
+| **当前阶段** | 阶段一~五 ✅ 代码完成，待部署 |
+| **已完成** | uni-id/Schema/互动API，云对象代码完成（61方法，14模块），sendPush+pushToAllUsers+频率控制 |
+| **下一步** | 上传部署云对象（含推送链路改动）；定时触发器因阿里云限制暂不可用 |
+| **架构** | 14模块源文件 + build.js合并脚本 + 合并部署文件 + 10张Schema + 61方法 |
 
 ## 目录结构
 

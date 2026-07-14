@@ -117,7 +117,148 @@ function parsePagination(data = {}, defaultPageSize = 12) {
 	return { pageNum, pageSize, skip }
 }
 
-const SENSITIVE_WORDS = []
+// ============================================================
+//  微信内容安全 API（msgSecCheck / imgSecCheck）
+// ============================================================
+
+/** access_token 缓存（7200s 有效期，提前 300s 刷新） */
+let accessTokenCache = { token: '', expiresAt: 0 }
+
+function getUniIdOAuth() {
+	if (!uniConfigCenter) return null
+	try {
+		const config = uniConfigCenter({ pluginId: 'uni-id' }).config()
+		const conf = Array.isArray(config)
+			? (config.find(item => item.dcloudAppid === '__UNI__A72DEF1') ||
+			   config.find(item => item.isDefaultConfig) ||
+			   config[0] || {})
+			: config
+		const oauth = conf['mp-weixin'] && conf['mp-weixin'].oauth && conf['mp-weixin'].oauth.weixin
+		return (oauth && oauth.appid && oauth.appsecret && !oauth.appsecret.includes('<')) ? oauth : null
+	} catch(e) { return null }
+}
+
+async function getWeixinAccessToken() {
+	const now = Date.now()
+	if (accessTokenCache.token && now < accessTokenCache.expiresAt - 300000) {
+		return accessTokenCache.token
+	}
+	const oauth = getUniIdOAuth()
+	if (!oauth) { console.error('[security] uni-id oauth 配置不可用'); return '' }
+
+	try {
+		const result = await uniCloud.httpclient.request(
+			`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${oauth.appid}&secret=${oauth.appsecret}`,
+			{ method: 'GET', dataType: 'json' }
+		)
+		const data = result.data || {}
+		if (data.access_token) {
+			accessTokenCache = { token: data.access_token, expiresAt: now + (data.expires_in || 7200) * 1000 }
+			return accessTokenCache.token
+		}
+		console.error('[security] 获取 access_token 失败:', data.errcode, data.errmsg)
+		return ''
+	} catch(e) {
+		console.error('[security] getAccessToken 异常:', e.message)
+		return ''
+	}
+}
+
+/**
+ * 微信文本安全检测
+ * @param {string} content - 待检测文本
+ * @returns {{ pass: boolean, suggest: string, label: number }}
+ */
+async function msgSecCheck(content) {
+	const text = (content || '').trim()
+	if (!text) return { pass: true, suggest: 'pass', label: 0 }
+
+	const token = await getWeixinAccessToken()
+	if (!token) {
+		console.warn('[security] msgSecCheck 无 access_token，降级放行')
+		return { pass: true, suggest: 'pass', label: 0 }
+	}
+
+	try {
+		const result = await uniCloud.httpclient.request(
+			`https://api.weixin.qq.com/wxa/msg_sec_check?access_token=${token}`,
+			{
+				method: 'POST',
+				dataType: 'json',
+				headers: { 'Content-Type': 'application/json' },
+				data: { content: text, version: 2, scene: 2, openid: '' }
+			}
+		)
+		const body = result.data || {}
+		if (body.errcode === 0 && body.result) {
+			const suggest = body.result.suggest || 'pass'
+			const label = body.result.label || 0
+			if (suggest === 'block') {
+				console.warn('[security] msgSecCheck BLOCK:', JSON.stringify(body.result))
+			}
+			return { pass: suggest !== 'block', suggest, label }
+		}
+		console.warn('[security] msgSecCheck 异常响应:', JSON.stringify(body))
+		return { pass: true, suggest: 'pass', label: 0 }
+	} catch(e) {
+		console.error('[security] msgSecCheck 调用异常:', e.message)
+		return { pass: true, suggest: 'pass', label: 0 }
+	}
+}
+
+/**
+ * 微信图片安全检测
+ * @param {Buffer|ArrayBuffer} imageBuffer - 图片二进制数据
+ * @returns {{ pass: boolean, suggest: string, label: number }}
+ */
+async function imgSecCheck(imageBuffer) {
+	if (!imageBuffer || !imageBuffer.length) return { pass: true, suggest: 'pass', label: 0 }
+
+	const token = await getWeixinAccessToken()
+	if (!token) {
+		console.warn('[security] imgSecCheck 无 access_token，降级放行')
+		return { pass: true, suggest: 'pass', label: 0 }
+	}
+
+	try {
+		const result = await uniCloud.httpclient.request(
+			`https://api.weixin.qq.com/wxa/img_sec_check?access_token=${token}`,
+			{
+				method: 'POST',
+				dataType: 'json',
+				files: { media: imageBuffer },
+				data: {}
+			}
+		)
+		const body = result.data || {}
+		if (body.errcode === 0 && body.result) {
+			const suggest = body.result.suggest || 'pass'
+			const label = body.result.label || 0
+			if (suggest === 'block') {
+				console.warn('[security] imgSecCheck BLOCK:', JSON.stringify(body.result))
+			}
+			return { pass: suggest !== 'block', suggest, label }
+		}
+		console.warn('[security] imgSecCheck 异常响应:', JSON.stringify(body))
+		return { pass: true, suggest: 'pass', label: 0 }
+	} catch(e) {
+		console.error('[security] imgSecCheck 调用异常:', e.message)
+		return { pass: true, suggest: 'pass', label: 0 }
+	}
+}
+
+// ============================================================
+//  本地敏感词库（第一关快速过滤，减少 API 调用）
+// ============================================================
+const SENSITIVE_WORDS = [
+	'六四', '天安门', '法轮功', 'flg', '达赖', '藏独', '疆独', '台独',
+	'裸体', '色情', '成人', 'av', 'porn', 'sex', 'fuck', 'hentai',
+	'赌博', '博彩', '彩票', '赌场', 'casino', 'bet',
+	'恐怖', '毒品', '枪支', '炸弹',
+	'兼职', '刷单', '刷信誉', '加微信', '微信号', 'qq号', '联系我',
+	'免费领取', '点击领取', '优惠券',
+]
+
 function hasSensitiveWord(text) {
 	const lower = (text || '').toLowerCase()
 	return SENSITIVE_WORDS.some(word => lower.includes(word.toLowerCase()))
@@ -303,6 +444,9 @@ module.exports = {
 		const { pageNum, pageSize } = parsePagination(data)
 		const keyword = (data.keyword || '').trim()
 		if (!keyword) return { errCode: 0, data: [] }
+
+		// 搜索词安全检测：违规关键词拒绝搜索，避免污染热门搜索词
+		if (hasSensitiveWord(keyword)) return { errCode: 400, errMsg: '搜索关键词不符合平台规范' }
 
 		// 记录搜索词（异步，不阻塞返回）
 		db.collection('wallpaper-search-history').add({
@@ -601,7 +745,13 @@ module.exports = {
 		const content = (data.content || '').trim()
 		if (content.length === 0) return { errCode: 400, errMsg: '评论内容不能为空' }
 		if (content.length > 500) return { errCode: 400, errMsg: '评论内容不能超过500字' }
+
+		// 本地敏感词快速过滤
 		if (hasSensitiveWord(content)) return { errCode: 400, errMsg: '评论包含不当内容，请修改后重试' }
+
+		// 微信 msgSecCheck 文本安全检测（API 降级时仍放行，不阻塞正常用户）
+		const safety = await msgSecCheck(content)
+		if (!safety.pass) return { errCode: 400, errMsg: '评论内容违反平台规范，请修改后重试' }
 
 		const result = await db.collection('wallpaper-comments').add({
 			wallId: data.wallId, uid: this.uid, content,
@@ -732,10 +882,27 @@ module.exports = {
 		if (!data.classid || !data.picurl || !data.smallPicurl)
 			return { errCode: 400, errMsg: '分类、原图和缩略图为必填项' }
 
+		// 检测描述文本安全
+		const desc = (data.description || '').trim()
+		if (desc) {
+			if (hasSensitiveWord(desc)) return { errCode: 400, errMsg: '描述包含不当内容，请修改后重试' }
+			const check = await msgSecCheck(desc)
+			if (!check.pass) return { errCode: 400, errMsg: '描述内容违反平台规范，请修改后重试' }
+		}
+
+		// 检测标签文本安全
+		const tabs = data.tabs || []
+		if (tabs.length) {
+			const tabsText = tabs.join(' ')
+			if (hasSensitiveWord(tabsText)) return { errCode: 400, errMsg: '标签包含不当内容，请修改后重试' }
+			const check = await msgSecCheck(tabsText)
+			if (!check.pass) return { errCode: 400, errMsg: '标签内容违反平台规范，请修改后重试' }
+		}
+
 		const result = await db.collection('wallpaper-user-upload').add({
 			uid: this.uid, picurl: data.picurl, smallPicurl: data.smallPicurl,
-			classid: data.classid, description: data.description || '',
-			tabs: data.tabs || [], status: 0, create_time: Date.now()
+			classid: data.classid, description: desc,
+			tabs: tabs, status: 0, create_time: Date.now()
 		})
 		return { errCode: 0, data: { id: result.id } }
 	},
@@ -768,7 +935,7 @@ module.exports = {
 		try {
 			const since = Date.now() - 7 * 24 * 60 * 60 * 1000
 
-			const result = await db.collection(SEARCH_COLLECTION)
+			const result = await db.collection('wallpaper-search-history')
 				.aggregate()
 				.match({ create_time: dbCmd.gte(since) })
 				.group({ _id: '$keyword', count: { $sum: 1 } })
@@ -799,7 +966,7 @@ module.exports = {
 				? { uid: this.uid }
 				: { deviceId: this.deviceId }
 
-			const result = await db.collection(SEARCH_COLLECTION)
+			const result = await db.collection('wallpaper-search-history')
 				.where(where)
 				.orderBy('create_time', 'desc')
 				.limit(20)
@@ -824,7 +991,7 @@ module.exports = {
 			? { uid: this.uid }
 			: { deviceId: this.deviceId }
 
-		await db.collection(SEARCH_COLLECTION).where(where).remove()
+		await db.collection('wallpaper-search-history').where(where).remove()
 		return { errCode: 0, data: { cleared: true } }
 	},
 
@@ -966,8 +1133,14 @@ module.exports = {
 	async adminUpload(data = {}) {
 		data = mergeData.call(this, data)
 		if (!data.fileName || !data.base64) return { errCode: 400, errMsg: 'fileName 和 base64 为必填项' }
+
+		// 微信图片安全检测
+		const imageBuffer = Buffer.from(data.base64, 'base64')
+		const imgCheck = await imgSecCheck(imageBuffer)
+		if (!imgCheck.pass) return { errCode: 400, errMsg: '图片内容违反平台规范，请更换图片' }
+
 		const result = await uniCloud.uploadFile({
-			cloudPath: `wallpaper/${data.fileName}`, fileContent: Buffer.from(data.base64, 'base64')
+			cloudPath: `wallpaper/${data.fileName}`, fileContent: imageBuffer
 		})
 		const urlResult = await uniCloud.getTempFileURL({ fileList: [result.fileID] })
 		return { errCode: 0, data: { fileID: result.fileID, cloudURL: urlResult.fileList[0].tempFileURL || result.fileID } }
